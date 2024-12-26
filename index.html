@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tamboia</title>
+</head>
+
+<style>
+  * {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+  }
+
+  body {
+    width: 100%;
+    height: calc(100vh - 5rem);
+    background: khaki;
+    overflow: hidden;
+    position: relative;
+    font-family: sans-serif;
+  }
+
+  main {
+    width: 50%;
+    margin: auto;
+    padding: 0.5rem;
+
+    & details {
+      line-height: 1.5;
+      font-size: 1.15rem;
+    }
+  }
+
+  details {
+    & summary {
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+  }
+
+  canvas {
+    grid-area: canvas;
+  }
+
+  footer {
+    grid-area: footer;
+    font-size: 36px;
+    width: 100%;
+    height: 5rem;
+    background-color: snow;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+
+    & span {
+      padding: 0.3rem 4.5rem;
+      border-radius: 2px;
+      background: #fffafa;
+      box-shadow: inset 6px 6px 12px #e6e1e1,
+        inset -6px -6px 12px #f4f0f0;
+    }
+  }
+</style>
+
+<body>
+  <main class="content">
+    <details>
+      <summary>
+        <span>Tamboia</span>
+      </summary>
+
+      <p>“Tamboia” é um jogo matemático no qual foi usado como base o famoso “jogo da cobrinha”. O nome vem de "ta" - <b>tabuada</b> e <b>mboia</b> - "cobra" em tupi. O
+        diferencial está na jogabilidade, cujo objetivo é ajudar com a tabuada. Nele a “cobrinha” se movimenta pela tela,
+        na qual existirá uma “fruta” com um número aleatório entre 0 e 9. Assim que a cobrinha pegar uma fruta, aparecerá
+        outra com um número aleatório também entre 0 e 9. Após isso, aparecerão duas frutas, uma com o valor correto da
+        multiplicação e outra com um valor próximo ao correto. Caso o jogador acerte, ganha-se mais pontos e o tamanho da
+        cobrinha aumenta, caso contrário, perde-se pontos e diminui a cobrinha.
+        O fim de jogo ocorre quando a cobrinha diminui por completo ou quando o jogador morde a própria cauda.
+        <b>(AINDA EM DESENVOLVIMENTO)</b>
+      </p>
+    </details>
+  </main>
+  <canvas id="screen"></canvas>
+  <footer>
+    <span></span>
+  </footer>
+</body>
+
+<script src="fruit.js"></script>
+
+<script>
+  function getPixelValue(width, height) {
+    let [widthDiv, heightDiv] = [16, 9]
+
+    if (width > 1360) widthDiv = widthDiv * 3
+    if (height > 600) heightDiv = heightDiv * 3
+
+    return Math.max(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
+  }
+
+  const
+    bodyWidth = document.body.offsetWidth,
+    bodyHeight = document.body.offsetHeight
+  const
+    PIXEL = getPixelValue(bodyWidth, bodyHeight),
+    CANVAS = document.querySelector("#screen"),
+    CTX = CANVAS.getContext('2d'),
+    SNAKE = [
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+    ]
+  CANVAS.width = bodyWidth
+  CANVAS.height = bodyHeight
+
+
+  function drawSnakeBody(ctx, snake) {
+    ctx.strokeStyle = 'snow'
+    for (let i = 0; i < snake.length; i++) {
+      ctx.fillStyle = 'seagreen'
+      if (i == 0) ctx.fillStyle = 'darkgreen'
+      const [x, y] = [snake[i].x, snake[i].y]
+      ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL)
+      ctx.strokeRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL)
+    }
+  }
+
+  let direction = { x: 1, y: 0 }
+  function changeDirection(event) {
+    const directions = {
+      ArrowUp: { x: 0, y: -1 },
+      ArrowDown: { x: 0, y: 1 },
+      ArrowLeft: { x: -1, y: 0 },
+      ArrowRight: { x: 1, y: 0 }
+    }
+    if (event.key in directions) direction = directions[event.key];
+  }
+  document.addEventListener("keydown", changeDirection);
+
+  function moveSnake(ctx, snake) {
+    const head = snake[0]
+    let newHead = { x: head.x + direction.x, y: head.y + direction.y }
+
+    if (head.x * PIXEL < 0) {
+      newHead.x = Math.floor(bodyWidth / PIXEL);
+    } else if (head.x * PIXEL >= bodyWidth) {
+      newHead.x = 0;
+    }
+
+    if (head.y * PIXEL < 0) {
+      newHead.y = Math.floor(bodyHeight / PIXEL);
+    } else if (head.y * PIXEL >= bodyHeight) {
+      newHead.y = 0;
+    }
+
+    snake.unshift(newHead)
+    snake.pop()
+  }
+
+  function addNewSnakePart(snake) {
+    const tail = snake[snake.length - 1]
+    const beforeTail = snake[snake.length - 2] || tail
+    snake.push({
+      x: tail.x + (tail.x - beforeTail.x),
+      y: tail.y + (tail.y - beforeTail.y)
+    })
+  }
+
+  let values = { a: null, b: null }
+  function updateValues() {
+    const { a, b } = values
+    const span = document.querySelector('footer > span')
+    span.innerHTML = `${a ? a : '?'} x ${b ? b : '?'} = ?`
+  }
+
+  let
+    fruit = null,
+    resultFruit = null
+  function hasEatedFruit(snake) {
+    if (values.a && values.b && !resultFruit) {
+      resultFruit = createResultFruit({ a: values.a, b: values.b })
+      fruit = createFruit(resultFruit.value)
+    }
+
+    const hasEat = checkEatedFruit(snake, fruit, resultFruit)
+    switch (hasEat) {
+      case 'normal-fruit':
+        if (!values.a) {
+          values.a = fruit.value
+          fruit = createFruit()
+          updateValues()
+          break
+        }
+        if (!values.b) {
+          values.b = fruit.value
+          updateValues()
+          break
+        }
+
+        if (values.a && values.b && resultFruit) {
+          resetValuesAndFruits()
+          snake.pop()
+          updateValues()
+          break
+        }
+      case 'result-fruit':
+        resetValuesAndFruits()
+        updateValues()
+        addNewSnakePart(snake)
+        break
+      default:
+        break
+    }
+  }
+
+  function resetValuesAndFruits() {
+    values = { a: null, b: null }
+    fruit = createFruit()
+    resultFruit = null
+  }
+
+  function gameLoop(ctx, snake) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    moveSnake(ctx, snake)
+    drawSnakeBody(ctx, snake)
+    hasEatedFruit(snake, fruit, resultFruit)
+    drawFruit(ctx, fruit)
+    if (resultFruit) drawFruit(ctx, resultFruit)
+  }
+
+  function init(ctx, snake) {
+    fruit = createFruit()
+    updateValues()
+    setInterval(() => {
+      gameLoop(ctx, snake);
+    }, 100);
+  }
+
+  init(CTX, SNAKE)
+</script>
+
+</html>
