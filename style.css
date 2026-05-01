@@ -1,0 +1,91 @@
+:root {
+  font-family: sans-serif;
+  font-size: 2.3ch;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  width: 100%;
+  height: calc(100vh - 7rem);
+  background: khaki;
+  overflow: hidden;
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr 7rem;
+  grid-template-columns: 1fr;
+}
+
+#about-content {
+  margin: auto;
+  padding: 2rem;
+  line-height: 1.5;
+  font-family: serif;
+  max-width: 62rem;
+
+  & span {
+    font-size: 2rem;
+  }
+
+  & p {
+    font-size: 1.25rem;
+    margin: 1rem 0 2rem;
+  }
+}
+
+
+#screen {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+button {
+  all: unset;
+  border: 1px solid #161619;
+  border-radius: 5px;
+  padding: 0.25rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.1s, color 0.15s;
+  font-family: sans-serif;
+
+  &:hover {
+    background-color: #16161930;
+    text-shadow: 0px 2px #16161d60;
+  }
+}
+
+footer {
+  grid-row: 2;
+  font-size: 42px;
+  width: 100%;
+  background-color: snow;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 0.2fr 2fr;
+
+
+  & #dialog-btn {
+    justify-self: center;
+    align-self: center;
+    grid-column: 1;
+    text-align: center;
+    margin: auto;
+    font-size: 26px;
+  }
+
+  & span {
+    grid-column: 2;
+    justify-self: center;
+    align-self: center;
+    padding: 0.8rem 4.5rem;
+    text-align: center;
+    border-radius: 5px;
+    background: #fffafa;
+    box-shadow: inset 6px 6px 12px #e6e1e1,
+      inset -6px -6px 12px #f4f0f0;
+  }
+}

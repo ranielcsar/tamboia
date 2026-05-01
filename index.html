@@ -5,88 +5,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tamboia</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
-<style>
-  * {
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
-  }
-
-  body {
-    width: 100%;
-    height: calc(100vh - 5rem);
-    background: khaki;
-    overflow: hidden;
-    position: relative;
-    font-family: sans-serif;
-  }
-
-  main {
-    width: 50%;
-    margin: auto;
-    padding: 0.5rem;
-
-    & details {
-      line-height: 1.5;
-      font-size: 1.15rem;
-    }
-  }
-
-  details {
-    & summary {
-      font-size: 1.4rem;
-      cursor: pointer;
-    }
-  }
-
-  canvas {
-    grid-area: canvas;
-  }
-
-  footer {
-    grid-area: footer;
-    font-size: 36px;
-    width: 100%;
-    height: 5rem;
-    background-color: snow;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    bottom: 0;
-
-    & span {
-      padding: 0.3rem 4.5rem;
-      border-radius: 2px;
-      background: #fffafa;
-      box-shadow: inset 6px 6px 12px #e6e1e1,
-        inset -6px -6px 12px #f4f0f0;
-    }
-  }
-</style>
-
 <body>
-  <main class="content">
-    <details>
-      <summary>
-        <span>Tamboia</span>
-      </summary>
+  <dialog class="about-content" id="about-content">
+    <span>🐍 Tamboia</span>
 
-      <p>“Tamboia” é um jogo matemático no qual foi usado como base o famoso “jogo da cobrinha”. O nome vem de "ta" - <b>tabuada</b> e <b>mboia</b> - "cobra" em tupi. O
-        diferencial está na jogabilidade, cujo objetivo é ajudar com a tabuada. Nele a “cobrinha” se movimenta pela tela,
-        na qual existirá uma “fruta” com um número aleatório entre 0 e 9. Assim que a cobrinha pegar uma fruta, aparecerá
-        outra com um número aleatório também entre 0 e 9. Após isso, aparecerão duas frutas, uma com o valor correto da
-        multiplicação e outra com um valor próximo ao correto. Caso o jogador acerte, ganha-se mais pontos e o tamanho da
-        cobrinha aumenta, caso contrário, perde-se pontos e diminui a cobrinha.
-        O fim de jogo ocorre quando a cobrinha diminui por completo ou quando o jogador morde a própria cauda.
-        <b>(AINDA EM DESENVOLVIMENTO)</b>
-      </p>
-    </details>
-  </main>
+    <p>“Tamboia” é um jogo matemático no qual foi usado como base o famoso “jogo da cobrinha”. O nome vem de "ta" -
+      <b>tabuada</b> e <b>mboia</b> - "cobra" em tupi. O
+      diferencial está na jogabilidade, cujo objetivo é ajudar com a tabuada. Nele a “cobrinha” se movimenta pela
+      tela,
+      na qual existirá uma “fruta” com um número aleatório entre 0 e 9. Assim que a cobrinha pegar uma fruta,
+      aparecerá
+      outra com um número aleatório também entre 0 e 9. Após isso, aparecerão duas frutas, uma com o valor correto da
+      multiplicação e outra com um valor próximo ao correto. Caso o jogador acerte, ganha-se mais pontos e o tamanho
+      da
+      cobrinha aumenta, caso contrário, perde-se pontos e diminui a cobrinha.
+      O fim de jogo ocorre quando a cobrinha diminui por completo ou quando o jogador morde a própria cauda.
+      <b>(AINDA EM DESENVOLVIMENTO)</b>
+    </p>
+
+    <form method="dialog">
+      <button>Fechar</button>
+    </form>
+  </dialog>
+
   <canvas id="screen"></canvas>
   <footer>
+    <button id="dialog-btn" command="show-modal" commandfor="about-content">Sobre</button>
     <span></span>
   </footer>
 </body>
