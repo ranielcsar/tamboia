@@ -41,6 +41,7 @@ body {
 #screen {
   grid-row: 1;
   grid-column: 1;
+  touch-action: none;
 }
 
 button {
@@ -87,5 +88,38 @@ footer {
     background: #fffafa;
     box-shadow: inset 6px 6px 12px #e6e1e1,
       inset -6px -6px 12px #f4f0f0;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    grid-template-rows: 1fr 8rem;
+    height: calc(100vh - 8rem);
+  }
+
+  footer {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    font-size: 28px;
+    padding: 0.5rem;
+  }
+
+  footer #dialog-btn {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 18px;
+    margin-top: 5px;
+  }
+
+  footer span {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 0.5rem 1rem;
+    width: 90%;
+  }
+
+  #about-content {
+    width: 90%;
+    padding: 1rem;
   }
 }

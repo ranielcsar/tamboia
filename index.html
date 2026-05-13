@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tamboia</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -88,6 +88,25 @@
     if (event.key in directions) direction = directions[event.key];
   }
   document.addEventListener("keydown", changeDirection);
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (Math.abs(dx) > 30) direction = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
+    } else {
+      if (Math.abs(dy) > 30) direction = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
+    }
+  }, { passive: true });
 
   function moveSnake(ctx, snake) {
     const head = snake[0]
