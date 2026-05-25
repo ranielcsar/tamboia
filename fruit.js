@@ -14,7 +14,7 @@ function createFruit(value) {
   return {
     x: Math.floor(Math.random() * cols),
     y: Math.floor(Math.random() * rows),
-    value: value ? Math.floor(Math.random() * value) + 1 : Math.floor(Math.random() * 9) + 1,
+    value: value ? Math.floor(Math.random() * (value / 2)) : Math.floor(Math.random() * 9) + 1,
   };
 }
 
@@ -32,10 +32,8 @@ function drawFruit(ctx, fruit) {
 }
 
 function checkEatedFruit(snake, fruit, resultFruit) {
-  let eatedFruit = ""
-  if (hasEatFruit(snake, fruit)) eatedFruit = 'normal-fruit'
-  if (resultFruit && hasEatFruit(snake, resultFruit)) eatedFruit = 'result-fruit'
-  return eatedFruit
+  if (hasEatFruit(snake, fruit)) return 'normal-fruit'
+  if (resultFruit && hasEatFruit(snake, resultFruit)) return 'result-fruit'
 }
 
 function hasEatFruit(snake, fruit) {
@@ -52,8 +50,8 @@ function hasEatedFruit(snake) {
     fruit = createFruit(resultFruit.value)
   }
 
-  const hasEat = checkEatedFruit(snake, fruit, resultFruit)
-  switch (hasEat) {
+  const eatedFruit = checkEatedFruit(snake, fruit, resultFruit)
+  switch (eatedFruit) {
     case 'normal-fruit':
       if (!values.a) {
         values.a = fruit.value

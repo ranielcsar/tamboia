@@ -9,6 +9,11 @@
 </head>
 
 <body>
+  <section class="about-sec">
+    <button id="dialog-btn" command="show-modal" commandfor="about-content">Sobre</button>
+    <span></span>
+  </section>
+
   <dialog class="about-content" id="about-content">
     <span>🐍 Tamboia</span>
 
@@ -32,10 +37,6 @@
   </dialog>
 
   <canvas id="screen"></canvas>
-  <footer>
-    <button id="dialog-btn" command="show-modal" commandfor="about-content">Sobre</button>
-    <span></span>
-  </footer>
 </body>
 
 <script src="game.js"></script>
@@ -55,7 +56,7 @@
 
   function updateValues() {
     const { a, b } = values
-    const span = document.querySelector('footer > span')
+    const span = document.querySelector('.about-sec > span')
     span.innerHTML = `${a ? a : '?'} x ${b ? b : '?'} = ?`
   }
 

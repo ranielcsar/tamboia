@@ -4,7 +4,7 @@ function getPixelValue(width, height) {
   if (width > 1360) widthDiv = widthDiv * 3
   if (height > 600) heightDiv = heightDiv * 3
 
-  return Math.max(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
+  return Math.min(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
 }
 
 const
@@ -41,9 +41,9 @@ document.addEventListener('touchend', e => {
   const dy = e.changedTouches[0].screenY - touchStartY;
 
   if (Math.abs(dx) > Math.abs(dy)) {
-    if (Math.abs(dx) > 30) direction = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
+    if (Math.abs(dx) > 30) snakeDirection = dx > 0 ? { x: 1, y: 0 } : { x: -1, y: 0 };
   } else {
-    if (Math.abs(dy) > 30) direction = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
+    if (Math.abs(dy) > 30) snakeDirection = dy > 0 ? { x: 0, y: 1 } : { x: 0, y: -1 };
   }
 }, { passive: true });
 

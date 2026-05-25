@@ -11,35 +11,67 @@
 
 body {
   width: 100%;
-  height: calc(100vh - 7rem);
+  height: 100dvh;
   background: khaki;
   overflow: hidden;
   position: relative;
   display: grid;
-  grid-template-rows: 1fr 7rem;
+  grid-template-rows: 3rem 1fr;
   grid-template-columns: 1fr;
 }
 
 #about-content {
   margin: auto;
-  padding: 2rem;
+  padding: 1rem;
   line-height: 1.5;
   font-family: serif;
   max-width: 62rem;
+  width: 95%;
 
   & span {
     font-size: 2rem;
   }
 
   & p {
-    font-size: 1.25rem;
+    font-size: clamp(0.85rem, 1rem, 1.3rem);
     margin: 1rem 0 2rem;
   }
 }
 
+.about-sec {
+  grid-row: 1;
+  width: 100%;
+  height: 100%;
+  background-color: snow;
+  display: grid;
+  grid-template-columns: 0.2fr 2fr;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  align-items: center;
+
+
+  & #dialog-btn {
+    grid-column: 1;
+    text-align: center;
+    font-size: inherit;
+  }
+
+  & span {
+    grid-column: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background: #fffafa;
+    box-shadow: inset 6px 6px 12px #e6e1e1,
+      inset -6px -6px 12px #f4f0f0;
+  }
+}
 
 #screen {
-  grid-row: 1;
+  grid-row: 2;
   grid-column: 1;
   touch-action: none;
 }
@@ -56,70 +88,5 @@ button {
   &:hover {
     background-color: #16161930;
     text-shadow: 0px 2px #16161d60;
-  }
-}
-
-footer {
-  grid-row: 2;
-  font-size: 42px;
-  width: 100%;
-  background-color: snow;
-  display: grid;
-  grid-template-rows: 1fr;
-  grid-template-columns: 0.2fr 2fr;
-
-
-  & #dialog-btn {
-    justify-self: center;
-    align-self: center;
-    grid-column: 1;
-    text-align: center;
-    margin: auto;
-    font-size: 26px;
-  }
-
-  & span {
-    grid-column: 2;
-    justify-self: center;
-    align-self: center;
-    padding: 0.8rem 4.5rem;
-    text-align: center;
-    border-radius: 5px;
-    background: #fffafa;
-    box-shadow: inset 6px 6px 12px #e6e1e1,
-      inset -6px -6px 12px #f4f0f0;
-  }
-}
-
-@media (max-width: 600px) {
-  body {
-    grid-template-rows: 1fr 8rem;
-    height: calc(100vh - 8rem);
-  }
-
-  footer {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto;
-    font-size: 28px;
-    padding: 0.5rem;
-  }
-
-  footer #dialog-btn {
-    grid-column: 1;
-    grid-row: 2;
-    font-size: 18px;
-    margin-top: 5px;
-  }
-
-  footer span {
-    grid-column: 1;
-    grid-row: 1;
-    padding: 0.5rem 1rem;
-    width: 90%;
-  }
-
-  #about-content {
-    width: 90%;
-    padding: 1rem;
   }
 }
