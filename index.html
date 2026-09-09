@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-touch-fullscreen" content="yes">
     <title>Tamboia</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +15,7 @@
 <body>
     <header class="calc-container">
         <div class="game-info left">
-            <span id="level-display">Lvl 1</span>
+            <span id="level-display">nível: 1</span>
         </div>
 
         <div class="calc">
@@ -32,6 +36,9 @@
         <canvas id="screen"></canvas>
     </main>
     <footer class="controls">
+        <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
+            <span>⟹</span>
+        </button>
         <div class="ctrl-container up-down">
             <button class="ctrl-btn up" onclick="setDirection('ArrowUp')">
                 <span>⟹</span>
@@ -40,14 +47,9 @@
                 <span>⟹</span>
             </button>
         </div>
-        <div class="ctrl-container left-right">
-            <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
-                <span>⟹</span>
-            </button>
-            <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
-                <span>⟹</span>
-            </button>
-        </div>
+        <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
+            <span>⟹</span>
+        </button>
     </footer>
 </body>
 
@@ -58,7 +60,7 @@
         if (width > 1360) widthDiv = widthDiv * 3
         if (height > 600) heightDiv = heightDiv * 3
 
-        return Math.max(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
+        return Math.min(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
     }
 
     const main = document.body.querySelector("main"),
@@ -402,7 +404,7 @@
         const score = Math.max(0, snake.length - 3);
         const level = getLevel(snake);
 
-        if (levelDisplay) levelDisplay.innerText = `Lvl ${level}`;
+        if (levelDisplay) levelDisplay.innerText = `nível: ${level}`;
         if (scoreDisplay) scoreDisplay.innerText = `${score} pts`;
     }
 

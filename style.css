@@ -31,11 +31,18 @@
   margin: 0;
 }
 
+html,
 body {
   width: 100%;
-  height: 100vh;
-  background: khaki;
+  height: 100%;
   overflow: hidden;
+  touch-action: none;
+  position: fixed;
+  inset: 0;
+}
+
+body {
+  background: khaki;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -48,7 +55,6 @@ header.calc-container {
   align-items: center;
   width: 100%;
   max-width: 18rem;
-  font-size: 3ch;
   position: relative;
 
   & .calc {
@@ -56,13 +62,14 @@ header.calc-container {
     justify-content: space-evenly;
     align-items: center;
     flex: 2;
+    font-size: 2ch;
 
     &>div {
       border: 2px solid #161619;
       background: snow;
       border-radius: 200px;
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -70,18 +77,19 @@ header.calc-container {
   }
 
   & .game-info {
-    font-size: 1ch;
-    flex: 0.5;
+    font-size: 1.6ch;
+    flex: 0.75;
     text-align: center;
   }
 }
 
 main {
+  flex: 1;
   width: 100%;
-  height: 100%;
   max-width: 72rem;
   position: relative;
   display: flex;
+  overflow: hidden;
 }
 
 #screen {
@@ -111,37 +119,46 @@ main {
 .controls {
   display: none;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
+  justify-content: center;
   width: 100%;
   margin: auto;
+  margin-bottom: 0.5rem;
 }
 
 @media (max-width: 768px) {
   .controls {
     display: flex;
+    gap: 0.3rem;
   }
 }
 
 .ctrl-container {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  justify-content: center;
+
+  &.up-down {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
 }
 
 button.ctrl-btn {
   all: unset;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.5rem;
 
-  border-radius: 30rem;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   background-color: #FFFAFAC0;
   box-shadow: 0 4px 0 #24220140;
   font-size: 1.25rem;
+  text-align: center;
+  vertical-align: middle;
+
+  & span {
+    width: inherit;
+    height: inherit;
+  }
 
   &.up span {
     transform: rotate(-90deg);
