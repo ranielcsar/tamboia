@@ -2,73 +2,486 @@
 <html lang="pt-br">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Tamboia</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tamboia</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <section class="about-sec">
-    <button id="dialog-btn" command="show-modal" commandfor="about-content">Sobre</button>
-    <span></span>
-  </section>
+    <header class="calc-container">
+        <div class="game-info left">
+            <span id="level-display">Lvl 1</span>
+        </div>
 
-  <dialog class="about-content" id="about-content">
-    <span>🐍 Tamboia</span>
+        <div class="calc">
+            <div class="left-number">
+                <span>?</span>
+            </div>
+            <span>x</span>
+            <div class="right-number">
+                <span>?</span>
+            </div>
+        </div>
 
-    <p>“Tamboia” é um jogo matemático no qual foi usado como base o famoso “jogo da cobrinha”. O nome vem de "ta" -
-      <b>tabuada</b> e <b>mboia</b> - "cobra" em tupi. O
-      diferencial está na jogabilidade, cujo objetivo é ajudar com a tabuada. Nele a “cobrinha” se movimenta pela
-      tela,
-      na qual existirá uma “fruta” com um número aleatório entre 0 e 9. Assim que a cobrinha pegar uma fruta,
-      aparecerá
-      outra com um número aleatório também entre 0 e 9. Após isso, aparecerão duas frutas, uma com o valor correto da
-      multiplicação e outra com um valor próximo ao correto. Caso o jogador acerte, ganha-se mais pontos e o tamanho
-      da
-      cobrinha aumenta, caso contrário, perde-se pontos e diminui a cobrinha.
-      O fim de jogo ocorre quando a cobrinha diminui por completo ou quando o jogador morde a própria cauda.
-      <b>(AINDA EM DESENVOLVIMENTO)</b>
-    </p>
-
-    <form method="dialog">
-      <button>Fechar</button>
-    </form>
-  </dialog>
-
-  <canvas id="screen"></canvas>
+        <div class="game-info right">
+            <span id="score-display">0 pts</span>
+        </div>
+    </header>
+    <main>
+        <canvas id="screen"></canvas>
+    </main>
+    <footer class="controls">
+        <div class="ctrl-container up-down">
+            <button class="ctrl-btn up" onclick="setDirection('ArrowUp')">
+                <span>⟹</span>
+            </button>
+            <button class="ctrl-btn down" onclick="setDirection('ArrowDown')">
+                <span>⟹</span>
+            </button>
+        </div>
+        <div class="ctrl-container left-right">
+            <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
+                <span>⟹</span>
+            </button>
+            <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
+                <span>⟹</span>
+            </button>
+        </div>
+    </footer>
 </body>
 
-<script src="game.js"></script>
-<script src="snake.js"></script>
-<script src="fruit.js"></script>
 <script>
-  const SNAKE = [
-    { x: 1, y: 1 },
-    { x: 2, y: 1 },
-    { x: 3, y: 1 },
-  ]
-  let
-    values = { a: null, b: null },
-    fruit = null,
-    resultFruit = null,
-    snakeDirection = { x: 1, y: 0 }
+    function getPixelValue(width, height) {
+        let [widthDiv, heightDiv] = [16, 9]
 
-  function updateValues() {
-    const { a, b } = values
-    const span = document.querySelector('.about-sec > span')
-    span.innerHTML = `${a ? a : '?'} x ${b ? b : '?'} = ?`
-  }
+        if (width > 1360) widthDiv = widthDiv * 3
+        if (height > 600) heightDiv = heightDiv * 3
 
-  function init(ctx, snake) {
-    fruit = createFruit()
-    updateValues()
-    setInterval(() => {
-      gameLoop(ctx, snake);
-    }, 100);
-  }
+        return Math.max(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
+    }
 
-  init(CTX, SNAKE)
+    const main = document.body.querySelector("main"),
+        bodyWidth = main.offsetWidth,
+        bodyHeight = main.offsetHeight;
+    const PIXEL = getPixelValue(bodyWidth, bodyHeight),
+        CANVAS = document.body.querySelector("main > #screen"),
+        CTX = CANVAS.getContext("2d");
+    CANVAS.width = bodyWidth;
+    CANVAS.height = bodyHeight;
+
+    const SNAKE = [
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 3, y: 1 }
+    ];
+    function drawSnakeBody(ctx, snake) {
+        ctx.strokeStyle = "snow";
+        for (let i = 0; i < snake.length; i++) {
+            ctx.fillStyle = "seagreen";
+            if (i === 0) ctx.fillStyle = "darkgreen";
+            const [x, y] = [snake[i].x, snake[i].y];
+            ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+            ctx.strokeRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL);
+        }
+    }
+
+    function moveSnake(ctx, snake) {
+        const head = snake[0];
+        let newHead = { x: head.x + snakeDirection.x, y: head.y + snakeDirection.y };
+
+        if (newHead.x < 0) {
+            newHead.x = Math.floor(bodyWidth / PIXEL);
+        } else if (newHead.x * PIXEL >= bodyWidth) {
+            newHead.x = 0;
+        }
+
+        if (newHead.y < 0) {
+            newHead.y = Math.floor(bodyHeight / PIXEL);
+        } else if (newHead.y * PIXEL >= bodyHeight) {
+            newHead.y = 0;
+        }
+
+        if (checkSelfCollision(snake)) {
+            resetGame(snake);
+        }
+
+        snake.unshift(newHead);
+        snake.pop();
+    }
+
+    let snakeDirection = { x: 1, y: 0 };
+    function changeSnakeDirection(event) {
+        const directions = {
+            ArrowUp: { x: 0, y: -1 },
+            ArrowDown: { x: 0, y: 1 },
+            ArrowLeft: { x: -1, y: 0 },
+            ArrowRight: { x: 1, y: 0 }
+        };
+        if (event.key in directions) {
+            const newDir = directions[event.key];
+            if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
+                snakeDirection = newDir;
+            }
+        }
+    }
+    document.addEventListener("keydown", changeSnakeDirection);
+
+    function setDirection(key) {
+        const directions = {
+            ArrowUp: { x: 0, y: -1 },
+            ArrowDown: { x: 0, y: 1 },
+            ArrowLeft: { x: -1, y: 0 },
+            ArrowRight: { x: 1, y: 0 }
+        };
+        if (key in directions) {
+            const newDir = directions[key];
+            if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
+                snakeDirection = newDir;
+            }
+        }
+    }
+
+    let fruit = null;
+    let resultFruit = null;
+    let extraNormalFruits = [];
+    let values = { a: null, b: null };
+    let gameInterval = null;
+    let currentSpeed = 100;
+
+    function isOccupied(x, y, snake) {
+        for (let i = 0; i < snake.length; i++) {
+            if (snake[i].x === x && snake[i].y === y) return true;
+        }
+        for (let i = 0; i < extraNormalFruits.length; i++) {
+            if (extraNormalFruits[i].x === x && extraNormalFruits[i].y === y) return true;
+        }
+        if (fruit && fruit.x === x && fruit.y === y) return true;
+        if (resultFruit && resultFruit.x === x && resultFruit.y === y) return true;
+        return false;
+    }
+
+    function getEmptyPosition(snake) {
+        const cols = Math.floor(bodyWidth / PIXEL);
+        const rows = Math.floor(bodyHeight / PIXEL);
+        let x, y, attempts = 0;
+        do {
+            x = Math.floor(Math.random() * cols);
+            y = Math.floor(Math.random() * rows);
+            attempts++;
+        } while (isOccupied(x, y, snake) && attempts < 1000);
+        return { x, y };
+    }
+
+    function getLevel(snake) {
+        const score = Math.max(0, snake.length - 3);
+        return Math.floor(score / 15) + 1;
+    }
+
+    function getTargetFruitCount(snake) {
+        const level = getLevel(snake);
+        if (level <= 1) return 2;
+        return Math.min(1 + level, 6);
+    }
+
+    function checkSpeed(snake) {
+        const level = getLevel(snake);
+        const targetSpeed = Math.max(50, 100 - (level - 1) * 5);
+
+        if (targetSpeed !== currentSpeed) {
+            currentSpeed = targetSpeed;
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(() => {
+                gameLoop(CTX, snake);
+            }, currentSpeed);
+        }
+    }
+
+    function updateExtraFruits(snake) {
+        if (values.a === null || values.b === null) {
+            extraNormalFruits = [];
+            return;
+        }
+
+        if (values.a === 1 || values.b === 1) {
+            extraNormalFruits = [];
+            return;
+        }
+
+        const targetCount = getTargetFruitCount(snake);
+        let currentTotal = 0;
+        if (fruit) currentTotal++;
+        if (resultFruit) currentTotal++;
+        currentTotal += extraNormalFruits.length;
+
+        while (currentTotal < targetCount) {
+            const pos = getEmptyPosition(snake);
+            const refVal = resultFruit ? resultFruit.value : undefined;
+            const newF = createFruit(refVal);
+            if (newF) {
+                newF.x = pos.x;
+                newF.y = pos.y;
+                extraNormalFruits.push(newF);
+                currentTotal++;
+            } else {
+                break;
+            }
+        }
+
+        while (currentTotal > targetCount && extraNormalFruits.length > 0) {
+            extraNormalFruits.pop();
+            currentTotal--;
+        }
+    }
+
+    function createFruit(value) {
+        const cols = Math.floor(bodyWidth / PIXEL);
+        const rows = Math.floor(bodyHeight / PIXEL);
+        let newValue = Math.floor(Math.random() * 9) + 1;
+
+        if (value !== undefined) {
+            const { a, b } = values;
+
+            if (a === 1 && b === 1) {
+                return null;
+            }
+
+            if (a === 0 || a === 1 || b === 0 || b === 1) {
+                newValue = (a === 0 || b === 0) ? 0 : 1;
+            } else {
+                const candidates = [
+                    a * (b - 1),
+                    a * (b + 1),
+                    (a - 1) * b,
+                    (a + 1) * b,
+                    value - 2,
+                    value + 2,
+                    value - 4,
+                    value + 4
+                ];
+
+                const usedValues = extraNormalFruits.map(f => f.value);
+                if (fruit) usedValues.push(fruit.value);
+
+                const options = candidates.filter(v =>
+                    v >= 0 &&
+                    v !== value &&
+                    v % 2 === value % 2 &&
+                    !usedValues.includes(v)
+                );
+
+                if (options.length > 0) {
+                    newValue = options[Math.floor(Math.random() * options.length)];
+                } else {
+                    let fallback = value + 2;
+                    while (usedValues.includes(fallback) || fallback === value) {
+                        fallback += 2;
+                    }
+                    newValue = fallback;
+                }
+            }
+        }
+
+        const pos = getEmptyPosition(SNAKE);
+
+        return {
+            x: pos.x,
+            y: pos.y,
+            value: newValue,
+        };
+    }
+
+    function drawFruit(ctx, fruit) {
+        if (!fruit) return;
+        ctx.fillStyle = "#c33";
+        ctx.fillRect(fruit.x * PIXEL, fruit.y * PIXEL, PIXEL, PIXEL);
+        ctx.fillStyle = "snow";
+        ctx.font = `${PIXEL / 1.4}px Fredoka`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+            fruit.value,
+            fruit.x * PIXEL + PIXEL / 2,
+            fruit.y * PIXEL + PIXEL / 2,
+        );
+    }
+
+    function hasEatFruit(snake, fruit) {
+        if (!fruit) return false;
+        const head = snake[0];
+        if (head.x === fruit.x && head.y === fruit.y) {
+            return true;
+        }
+        return false;
+    }
+
+    function hasEatedFruit(snake) {
+        for (let i = 0; i < extraNormalFruits.length; i++) {
+            if (hasEatFruit(snake, extraNormalFruits[i])) {
+                const eatenVal = extraNormalFruits[i].value;
+                extraNormalFruits.splice(i, 1);
+                if (!values.a) {
+                    values.a = eatenVal;
+                    updateValues();
+                } else if (!values.b) {
+                    values.b = eatenVal;
+                    updateValues();
+                } else if (values.a && values.b && resultFruit) {
+                    resetValuesAndFruits();
+                    snake.pop();
+                    updateValues();
+                }
+                checkSpeed(snake);
+                return;
+            }
+        }
+
+        const eatedFruit = checkEatedFruit(snake, fruit, resultFruit)
+        switch (eatedFruit) {
+            case 'number-fruit':
+                if (!values.a) {
+                    values.a = fruit.value
+                    fruit = createFruit()
+                    updateValues()
+                    break
+                }
+                if (!values.b) {
+                    values.b = fruit.value
+                    updateValues()
+                    break
+                }
+
+                if (values.a && values.b && resultFruit) {
+                    resetValuesAndFruits()
+                    snake.pop()
+                    updateValues()
+                    break
+                }
+            case 'result-fruit':
+                resetValuesAndFruits()
+                addNewSnakePart(snake)
+                updateValues()
+                break
+            default:
+                break
+        }
+        checkSpeed(snake);
+    }
+
+    function createResultFruit({ a, b }) {
+        const cols = Math.floor(bodyWidth / PIXEL);
+        const rows = Math.floor(bodyHeight / PIXEL);
+        const pos = getEmptyPosition(SNAKE);
+        return {
+            x: pos.x,
+            y: pos.y,
+            value: a * b,
+        };
+    }
+
+    function getRandomIntInclusive(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function checkEatedFruit(snake, fruit, resultFruit) {
+        if (hasEatFruit(snake, fruit)) return 'number-fruit'
+        if (resultFruit && hasEatFruit(snake, resultFruit)) return 'result-fruit'
+    }
+
+    function resetValuesAndFruits() {
+        values = { a: null, b: null }
+        extraNormalFruits = []
+        fruit = createFruit()
+        resultFruit = null
+    }
+
+    function updateHUD(snake) {
+        const levelDisplay = document.getElementById('level-display');
+        const scoreDisplay = document.getElementById('score-display');
+
+        const score = Math.max(0, snake.length - 3);
+        const level = getLevel(snake);
+
+        if (levelDisplay) levelDisplay.innerText = `Lvl ${level}`;
+        if (scoreDisplay) scoreDisplay.innerText = `${score} pts`;
+    }
+
+    function updateValues() {
+        const { a, b } = values
+        const leftNum = document.querySelector('.calc-container > .calc > div.left-number').querySelector('span'),
+            rightNum = document.querySelector('.calc-container > .calc > div.right-number').querySelector('span')
+
+        leftNum.innerHTML = '?'
+        rightNum.innerHTML = '?'
+        if (a !== null) leftNum.innerHTML = a
+        if (b !== null) rightNum.innerHTML = b
+
+        updateHUD(SNAKE);
+    }
+
+    function addNewSnakePart(snake) {
+        const lastIndex = snake.length - 1
+        const tail = snake[lastIndex]
+        const beforeTail = snake[lastIndex - 1]
+
+        const dx = tail.x - beforeTail.x
+        const dy = tail.y - beforeTail.y
+
+        snake.push({
+            x: tail.x + dx,
+            y: tail.y + dy
+        })
+    }
+
+    function checkSelfCollision(snake) {
+        const head = snake[0];
+        for (let i = 1; i < snake.length; i++) {
+            if (head.x === snake[i].x && head.y === snake[i].y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function resetGame(snake) {
+        snake.length = 0;
+        snake.push({ x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 });
+        snakeDirection = { x: 1, y: 0 };
+        currentSpeed = 100;
+        resetValuesAndFruits();
+        updateValues();
+        if (gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(() => {
+            gameLoop(CTX, snake);
+        }, currentSpeed);
+    }
+
+    function gameLoop(ctx, snake) {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        moveSnake(ctx, snake);
+        drawSnakeBody(ctx, snake);
+        hasEatedFruit(snake)
+
+        if (values.a !== null && values.b !== null && !resultFruit) {
+            resultFruit = createResultFruit({ a: values.a, b: values.b })
+            fruit = createFruit(resultFruit.value)
+        }
+
+        updateExtraFruits(snake);
+
+        if (fruit) drawFruit(ctx, fruit);
+        if (resultFruit) drawFruit(ctx, resultFruit);
+        for (let i = 0; i < extraNormalFruits.length; i++) {
+            drawFruit(ctx, extraNormalFruits[i]);
+        }
+    }
+    function init(ctx, snake) {
+        gameInterval = setInterval(() => {
+            gameLoop(ctx, snake);
+        }, currentSpeed);
+    }
+
+    init(CTX, SNAKE);
 </script>
 
 </html>
