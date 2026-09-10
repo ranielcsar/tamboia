@@ -128,7 +128,7 @@ main {
 @media (max-width: 768px) {
   .controls {
     display: flex;
-    gap: 0.3rem;
+    gap: 0.8rem;
   }
 }
 
