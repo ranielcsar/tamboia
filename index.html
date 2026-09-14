@@ -29,54 +29,80 @@
         </div>
 
         <div class="game-info right">
-            <span id="score-display">0 pts</span>
+            <span id="score-display">0 pontos</span>
         </div>
     </header>
     <main>
         <canvas id="screen"></canvas>
     </main>
     <footer class="controls">
-        <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
-            <span>⟹</span>
+        <button class="ctrl-btn left" type="button">
+            <span>⇪</span>
         </button>
         <div class="ctrl-container up-down">
-            <button class="ctrl-btn up" onclick="setDirection('ArrowUp')">
-                <span>⟹</span>
+            <button class="ctrl-btn up" type="button">
+                <span>⇪</span>
             </button>
-            <button class="ctrl-btn down" onclick="setDirection('ArrowDown')">
-                <span>⟹</span>
+            <button class="ctrl-btn down" type="button">
+                <span>⇪</span>
             </button>
         </div>
-        <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
-            <span>⟹</span>
+        <button class="ctrl-btn right" type="button">
+            <span>⇪</span>
         </button>
     </footer>
 </body>
 
 <script>
     function getPixelValue(width, height) {
-        let [widthDiv, heightDiv] = [16, 9]
+        let [widthDiv, heightDiv] = [16, 9];
 
-        if (width > 1360) widthDiv = widthDiv * 3
-        if (height > 600) heightDiv = heightDiv * 3
+        if (width > 1360) widthDiv = widthDiv * 3;
+        if (height > 600) heightDiv = heightDiv * 3;
 
-        return Math.min(Math.floor(width / widthDiv), Math.floor(height / heightDiv));
+        return Math.max(12, Math.min(Math.floor(width / widthDiv), Math.floor(height / heightDiv)));
     }
 
-    const main = document.body.querySelector("main"),
-        bodyWidth = main.offsetWidth,
+    const main = document.body.querySelector("main");
+    const CANVAS = document.body.querySelector("main > #screen");
+    const CTX = CANVAS.getContext("2d");
+
+    let bodyWidth = main.offsetWidth;
+    let bodyHeight = main.offsetHeight;
+    let dpr = window.devicePixelRatio || 1;
+    let PIXEL = getPixelValue(bodyWidth, bodyHeight);
+    let COLS = Math.floor(bodyWidth / PIXEL);
+    let ROWS = Math.floor(bodyHeight / PIXEL);
+    let FRUIT_FONT = `${PIXEL / 1.4}px Fredoka`;
+
+    function setupCanvasSize() {
+        bodyWidth = main.offsetWidth;
         bodyHeight = main.offsetHeight;
-    const PIXEL = getPixelValue(bodyWidth, bodyHeight),
-        CANVAS = document.body.querySelector("main > #screen"),
-        CTX = CANVAS.getContext("2d");
-    CANVAS.width = bodyWidth;
-    CANVAS.height = bodyHeight;
+        dpr = window.devicePixelRatio || 1;
+
+        CANVAS.width = bodyWidth * dpr;
+        CANVAS.height = bodyHeight * dpr;
+
+        CANVAS.style.width = `${bodyWidth}px`;
+        CANVAS.style.height = `${bodyHeight}px`;
+
+        CTX.scale(dpr, dpr);
+
+        PIXEL = getPixelValue(bodyWidth, bodyHeight);
+        COLS = Math.floor(bodyWidth / PIXEL);
+        ROWS = Math.floor(bodyHeight / PIXEL);
+        FRUIT_FONT = `${PIXEL / 1.4}px Fredoka`;
+    }
+
+    setupCanvasSize();
+    window.addEventListener('resize', setupCanvasSize);
 
     const SNAKE = [
-        { x: 1, y: 1 },
+        { x: 3, y: 1 },
         { x: 2, y: 1 },
-        { x: 3, y: 1 }
+        { x: 1, y: 1 },
     ];
+
     function drawSnakeBody(ctx, snake) {
         ctx.strokeStyle = "snow";
         for (let i = 0; i < snake.length; i++) {
@@ -89,23 +115,25 @@
     }
 
     function moveSnake(ctx, snake) {
+        canChangeDirection = true;
         const head = snake[0];
         let newHead = { x: head.x + snakeDirection.x, y: head.y + snakeDirection.y };
 
         if (newHead.x < 0) {
-            newHead.x = Math.floor(bodyWidth / PIXEL);
-        } else if (newHead.x * PIXEL >= bodyWidth) {
+            newHead.x = COLS;
+        } else if (newHead.x > COLS) {
             newHead.x = 0;
         }
 
         if (newHead.y < 0) {
-            newHead.y = Math.floor(bodyHeight / PIXEL);
-        } else if (newHead.y * PIXEL >= bodyHeight) {
+            newHead.y = ROWS;
+        } else if (newHead.y > ROWS) {
             newHead.y = 0;
         }
 
         if (checkSelfCollision(snake)) {
             resetGame(snake);
+            return;
         }
 
         snake.unshift(newHead);
@@ -113,7 +141,10 @@
     }
 
     let snakeDirection = { x: 1, y: 0 };
+    let canChangeDirection = true;
+
     function changeSnakeDirection(event) {
+        if (!canChangeDirection) return;
         const directions = {
             ArrowUp: { x: 0, y: -1 },
             ArrowDown: { x: 0, y: 1 },
@@ -124,12 +155,14 @@
             const newDir = directions[event.key];
             if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
                 snakeDirection = newDir;
+                canChangeDirection = false;
             }
         }
     }
     document.addEventListener("keydown", changeSnakeDirection);
 
     function setDirection(key) {
+        if (!canChangeDirection) return;
         const directions = {
             ArrowUp: { x: 0, y: -1 },
             ArrowDown: { x: 0, y: 1 },
@@ -140,16 +173,66 @@
             const newDir = directions[key];
             if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
                 snakeDirection = newDir;
+                canChangeDirection = false;
             }
         }
     }
+
+    const btnLeft = document.querySelector('.ctrl-btn.left');
+    const btnUp = document.querySelector('.ctrl-btn.up');
+    const btnDown = document.querySelector('.ctrl-btn.down');
+    const btnRight = document.querySelector('.ctrl-btn.right');
+
+    const bindTouchControl = (element, key) => {
+        if (!element) return;
+        element.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            setDirection(key);
+        }, { passive: false });
+        element.addEventListener('click', (e) => {
+            e.preventDefault();
+            setDirection(key);
+        });
+    };
+
+    bindTouchControl(btnLeft, 'ArrowLeft');
+    bindTouchControl(btnUp, 'ArrowUp');
+    bindTouchControl(btnDown, 'ArrowDown');
+    bindTouchControl(btnRight, 'ArrowRight');
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    CANVAS.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    CANVAS.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const dx = touchEndX - touchStartX;
+        const dy = touchEndY - touchStartY;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (Math.abs(dx) > 30) {
+                setDirection(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
+            }
+        } else {
+            if (Math.abs(dy) > 30) {
+                setDirection(dy > 0 ? 'ArrowDown' : 'ArrowUp');
+            }
+        }
+    }, { passive: true });
 
     let fruit = null;
     let resultFruit = null;
     let extraNormalFruits = [];
     let values = { a: null, b: null };
-    let gameInterval = null;
     let currentSpeed = 300;
+
+    let lastStepTime = 0;
+    let animationFrameId = null;
 
     function isOccupied(x, y, snake) {
         for (let i = 0; i < snake.length; i++) {
@@ -164,15 +247,28 @@
     }
 
     function getEmptyPosition(snake) {
-        const cols = Math.floor(bodyWidth / PIXEL);
-        const rows = Math.floor(bodyHeight / PIXEL);
-        let x, y, attempts = 0;
-        do {
-            x = Math.floor(Math.random() * cols);
-            y = Math.floor(Math.random() * rows);
-            attempts++;
-        } while (isOccupied(x, y, snake) && attempts < 1000);
-        return { x, y };
+        const total = COLS * ROWS;
+        const occupied = new Set();
+        for (let i = 0; i < snake.length; i++) {
+            occupied.add(snake[i].y * COLS + snake[i].x);
+        }
+        for (let i = 0; i < extraNormalFruits.length; i++) {
+            occupied.add(extraNormalFruits[i].y * COLS + extraNormalFruits[i].x);
+        }
+        if (fruit) occupied.add(fruit.y * COLS + fruit.x);
+        if (resultFruit) occupied.add(resultFruit.y * COLS + resultFruit.x);
+
+        const freeCount = total - occupied.size;
+        if (freeCount <= 0) return { x: 0, y: 0 };
+
+        let pick = Math.floor(Math.random() * freeCount);
+        for (let i = 0; i < total; i++) {
+            if (!occupied.has(i)) {
+                if (pick === 0) return { x: i % COLS, y: Math.floor(i / COLS) };
+                pick--;
+            }
+        }
+        return { x: 0, y: 0 };
     }
 
     function getLevel(snake) {
@@ -189,13 +285,8 @@
     function checkSpeed(snake) {
         const level = getLevel(snake);
         const targetSpeed = Math.max(50, 100 - (level - 1) * 5);
-
         if (targetSpeed !== currentSpeed) {
             currentSpeed = targetSpeed;
-            if (gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(() => {
-                gameLoop(CTX, snake);
-            }, currentSpeed);
         }
     }
 
@@ -237,8 +328,6 @@
     }
 
     function createFruit(value) {
-        const cols = Math.floor(bodyWidth / PIXEL);
-        const rows = Math.floor(bodyHeight / PIXEL);
         let newValue = Math.floor(Math.random() * 9) + 1;
 
         if (value !== undefined) {
@@ -298,7 +387,7 @@
         ctx.fillStyle = "#c33";
         ctx.fillRect(fruit.x * PIXEL, fruit.y * PIXEL, PIXEL, PIXEL);
         ctx.fillStyle = "snow";
-        ctx.font = `${PIXEL / 1.4}px Fredoka`;
+        ctx.font = FRUIT_FONT;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(
@@ -338,41 +427,39 @@
             }
         }
 
-        const eatedFruit = checkEatedFruit(snake, fruit, resultFruit)
+        const eatedFruit = checkEatedFruit(snake, fruit, resultFruit);
         switch (eatedFruit) {
             case 'number-fruit':
                 if (!values.a) {
-                    values.a = fruit.value
-                    fruit = createFruit()
-                    updateValues()
-                    break
+                    values.a = fruit.value;
+                    fruit = createFruit();
+                    updateValues();
+                    break;
                 }
                 if (!values.b) {
-                    values.b = fruit.value
-                    updateValues()
-                    break
+                    values.b = fruit.value;
+                    updateValues();
+                    break;
                 }
 
                 if (values.a && values.b && resultFruit) {
-                    resetValuesAndFruits()
-                    snake.pop()
-                    updateValues()
-                    break
+                    resetValuesAndFruits();
+                    snake.pop();
+                    updateValues();
+                    break;
                 }
             case 'result-fruit':
-                resetValuesAndFruits()
-                addNewSnakePart(snake)
-                updateValues()
-                break
+                resetValuesAndFruits();
+                addNewSnakePart(snake);
+                updateValues();
+                break;
             default:
-                break
+                break;
         }
         checkSpeed(snake);
     }
 
     function createResultFruit({ a, b }) {
-        const cols = Math.floor(bodyWidth / PIXEL);
-        const rows = Math.floor(bodyHeight / PIXEL);
         const pos = getEmptyPosition(SNAKE);
         return {
             x: pos.x,
@@ -386,53 +473,51 @@
     }
 
     function checkEatedFruit(snake, fruit, resultFruit) {
-        if (hasEatFruit(snake, fruit)) return 'number-fruit'
-        if (resultFruit && hasEatFruit(snake, resultFruit)) return 'result-fruit'
+        if (hasEatFruit(snake, fruit)) return 'number-fruit';
+        if (resultFruit && hasEatFruit(snake, resultFruit)) return 'result-fruit';
     }
 
     function resetValuesAndFruits() {
-        values = { a: null, b: null }
-        extraNormalFruits = []
-        fruit = createFruit()
-        resultFruit = null
+        values = { a: null, b: null };
+        extraNormalFruits = [];
+        fruit = createFruit();
+        resultFruit = null;
     }
 
-    function updateHUD(snake) {
-        const levelDisplay = document.getElementById('level-display');
-        const scoreDisplay = document.getElementById('score-display');
+    const levelDisplay = document.getElementById('level-display');
+    const scoreDisplay = document.getElementById('score-display');
+    const leftNum = document.querySelector('.calc-container > .calc > div.left-number > span');
+    const rightNum = document.querySelector('.calc-container > .calc > div.right-number > span');
 
+    function updateHUD(snake) {
         const score = Math.max(0, snake.length - 3);
         const level = getLevel(snake);
 
         if (levelDisplay) levelDisplay.innerText = `nível: ${level}`;
-        if (scoreDisplay) scoreDisplay.innerText = `${score} pts`;
+        if (scoreDisplay) scoreDisplay.innerText = `${score} pontos`;
     }
 
     function updateValues() {
-        const { a, b } = values
-        const leftNum = document.querySelector('.calc-container > .calc > div.left-number').querySelector('span'),
-            rightNum = document.querySelector('.calc-container > .calc > div.right-number').querySelector('span')
+        const { a, b } = values;
 
-        leftNum.innerHTML = '?'
-        rightNum.innerHTML = '?'
-        if (a !== null) leftNum.innerHTML = a
-        if (b !== null) rightNum.innerHTML = b
+        if (leftNum) leftNum.innerHTML = a !== null ? a : '?';
+        if (rightNum) rightNum.innerHTML = b !== null ? b : '?';
 
         updateHUD(SNAKE);
     }
 
     function addNewSnakePart(snake) {
-        const lastIndex = snake.length - 1
-        const tail = snake[lastIndex]
-        const beforeTail = snake[lastIndex - 1]
+        const lastIndex = snake.length - 1;
+        const tail = snake[lastIndex];
+        const beforeTail = snake[lastIndex - 1];
 
-        const dx = tail.x - beforeTail.x
-        const dy = tail.y - beforeTail.y
+        const dx = tail.x - beforeTail.x;
+        const dy = tail.y - beforeTail.y;
 
         snake.push({
             x: tail.x + dx,
             y: tail.y + dy
-        })
+        });
     }
 
     function checkSelfCollision(snake) {
@@ -447,40 +532,46 @@
 
     function resetGame(snake) {
         snake.length = 0;
-        snake.push({ x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 });
+        snake.push({ x: 3, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 });
         snakeDirection = { x: 1, y: 0 };
         currentSpeed = 100;
         resetValuesAndFruits();
         updateValues();
-        if (gameInterval) clearInterval(gameInterval);
-        gameInterval = setInterval(() => {
-            gameLoop(CTX, snake);
-        }, currentSpeed);
     }
 
-    function gameLoop(ctx, snake) {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        moveSnake(ctx, snake);
-        drawSnakeBody(ctx, snake);
-        hasEatedFruit(snake)
+    function gameLoop(timestamp) {
+        if (!lastStepTime) lastStepTime = timestamp;
+        const elapsed = timestamp - lastStepTime;
 
-        if (values.a !== null && values.b !== null && !resultFruit) {
-            resultFruit = createResultFruit({ a: values.a, b: values.b })
-            fruit = createFruit(resultFruit.value)
+        if (elapsed >= currentSpeed) {
+            lastStepTime = timestamp;
+
+            moveSnake(CTX, SNAKE);
+            hasEatedFruit(SNAKE);
+
+            if (values.a !== null && values.b !== null && !resultFruit) {
+                resultFruit = createResultFruit({ a: values.a, b: values.b });
+                fruit = createFruit(resultFruit.value);
+                updateExtraFruits(SNAKE);
+            }
         }
 
-        updateExtraFruits(snake);
+        CTX.clearRect(0, 0, bodyWidth, bodyHeight);
+        drawSnakeBody(CTX, SNAKE);
 
-        if (fruit) drawFruit(ctx, fruit);
-        if (resultFruit) drawFruit(ctx, resultFruit);
+        if (fruit) drawFruit(CTX, fruit);
+        if (resultFruit) drawFruit(CTX, resultFruit);
         for (let i = 0; i < extraNormalFruits.length; i++) {
-            drawFruit(ctx, extraNormalFruits[i]);
+            drawFruit(CTX, extraNormalFruits[i]);
         }
+
+        animationFrameId = requestAnimationFrame(gameLoop);
     }
+
     function init(ctx, snake) {
-        gameInterval = setInterval(() => {
-            gameLoop(ctx, snake);
-        }, currentSpeed);
+        resetValuesAndFruits();
+        updateValues();
+        animationFrameId = requestAnimationFrame(gameLoop);
     }
 
     init(CTX, SNAKE);

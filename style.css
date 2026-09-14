@@ -29,6 +29,8 @@
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 html,
@@ -46,6 +48,10 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 header.calc-container {
@@ -77,9 +83,13 @@ header.calc-container {
   }
 
   & .game-info {
-    font-size: 1.6ch;
-    flex: 0.75;
+    font-size: 1.5ch;
+    flex: 1;
     text-align: center;
+
+    &.right {
+      margin-right: 0.5rem;
+    }
   }
 }
 
@@ -94,8 +104,7 @@ main {
 
 #screen {
   border: 2px dashed #16161d;
-  width: 95%;
-  margin: 0 auto 0.5rem;
+  width: 100%;
 }
 
 #about-content {
@@ -121,8 +130,7 @@ main {
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin: auto;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 @media (max-width: 768px) {
@@ -146,29 +154,29 @@ main {
 button.ctrl-btn {
   all: unset;
   display: flex;
-
-  width: 2rem;
-  height: 2rem;
+  justify-content: center;
   background-color: #FFFAFAC0;
   box-shadow: 0 4px 0 #24220140;
-  font-size: 1.25rem;
-  text-align: center;
-  vertical-align: middle;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.8rem;
+  touch-action: manipulation;
+  font-size: 2.5rem;
 
   & span {
-    width: inherit;
-    height: inherit;
+    align-self: center;
+    width: fit-content;
   }
 
-  &.up span {
+  &.left span {
     transform: rotate(-90deg);
   }
 
   &.down span {
-    transform: rotate(90deg);
+    transform: rotate(180deg);
   }
 
-  &.left span {
-    transform: rotate(180deg);
+  &.right span {
+    transform: rotate(90deg);
   }
 }
