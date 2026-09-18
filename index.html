@@ -47,33 +47,30 @@
     </main>
 
     <footer class="controls">
+      <button class="ctrl-btn left" data-direction="ArrowLeft">
+        <span>⇐</span>
+      </button>
       <div class="ctrl-container up-down">
-        <button class="ctrl-btn up" onclick="setDirection('ArrowUp')">
-          <span>⟹</span>
+        <button class="ctrl-btn up" data-direction="ArrowUp">
+          <span>⇑</span>
         </button>
-        <button class="ctrl-btn down" onclick="setDirection('ArrowDown')">
-          <span>⟹</span>
-        </button>
-      </div>
-
-      <div class="ctrl-container left-right">
-        <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
-          <span>⟹</span>
-        </button>
-
-        <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
-          <span>⟹</span>
+        <button class="ctrl-btn down" data-direction="ArrowDown">
+          <span>⇓</span>
         </button>
       </div>
+      <button class="ctrl-btn right" data-direction="ArrowRight">
+        <span>⇒</span>
+      </button>
     </footer>
   </body>
 
   <script>
     function getPixelValue(width, height) {
-      let [widthDiv, heightDiv] = [16, 9]
+      let widthDiv = 16
+      let heightDiv = 9
 
-      if (width > 1360) widthDiv = widthDiv * 3
-      if (height > 600) heightDiv = heightDiv * 3
+      if (width > 1360) widthDiv *= 3
+      if (height > 600) heightDiv *= 3
 
       return Math.min(
         Math.floor(width / widthDiv),
@@ -86,7 +83,14 @@
       bodyHeight = main.offsetHeight
     const PIXEL = getPixelValue(bodyWidth, bodyHeight),
       CANVAS = document.body.querySelector('main > #screen'),
-      CTX = CANVAS.getContext('2d')
+      CTX = CANVAS.getContext('2d'),
+      levelDisplay = document.getElementById('level-display'),
+      scoreDisplay = document.getElementById('score-display'),
+      gameOverDisplay = document.getElementById('game-over'),
+      finalScoreDisplay = document.getElementById('final-score'),
+      restartButton = document.getElementById('restart-btn'),
+      leftNumber = document.querySelector('.left-number span'),
+      rightNumber = document.querySelector('.right-number span')
 
     const COLS = Math.floor(bodyWidth / PIXEL)
     const ROWS = Math.floor(bodyHeight / PIXEL)
@@ -100,14 +104,21 @@
       { x: 1, y: 1 },
     ]
 
+    CTX.strokeStyle = 'snow'
+    CTX.textAlign = 'center'
+    CTX.textBaseline = 'middle'
+    CTX.font = `${PIXEL / 1.4}px Fredoka`
+
     function drawSnakeBody(ctx, snake) {
-      ctx.strokeStyle = 'snow'
-      for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = 'seagreen'
-        if (i === 0) ctx.fillStyle = 'darkgreen'
-        const [x, y] = [snake[i].x, snake[i].y]
-        ctx.fillRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL)
-        ctx.strokeRect(x * PIXEL, y * PIXEL, PIXEL, PIXEL)
+      if (snake.length === 0) return
+      ctx.fillStyle = 'darkgreen'
+      ctx.fillRect(snake[0].x * PIXEL, snake[0].y * PIXEL, PIXEL, PIXEL)
+      ctx.strokeRect(snake[0].x * PIXEL, snake[0].y * PIXEL, PIXEL, PIXEL)
+      ctx.fillStyle = 'seagreen'
+      for (let i = 1; i < snake.length; i++) {
+        const segment = snake[i]
+        ctx.fillRect(segment.x * PIXEL, segment.y * PIXEL, PIXEL, PIXEL)
+        ctx.strokeRect(segment.x * PIXEL, segment.y * PIXEL, PIXEL, PIXEL)
       }
     }
 
@@ -139,42 +150,67 @@
         return
       }
 
+      const tail = snake[snake.length - 1]
       snake.unshift(newHead)
       snake.pop()
+      occupancy[getCellIndex(tail.x, tail.y)] = 0
+      occupancy[getCellIndex(newHead.x, newHead.y)] = 1
+    }
+
+    const directions = {
+      ArrowUp: { x: 0, y: -1 },
+      ArrowDown: { x: 0, y: 1 },
+      ArrowLeft: { x: -1, y: 0 },
+      ArrowRight: { x: 1, y: 0 },
+    }
+
+    function applyDirection(key) {
+      const newDir = directions[key]
+      if (!newDir) return
+      if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
+        snakeDirection = newDir
+        canChangeDirection = false
+      }
     }
 
     function changeSnakeDirection(event) {
-      const directions = {
-        ArrowUp: { x: 0, y: -1 },
-        ArrowDown: { x: 0, y: 1 },
-        ArrowLeft: { x: -1, y: 0 },
-        ArrowRight: { x: 1, y: 0 },
-      }
-      if (event.key in directions) {
-        const newDir = directions[event.key]
-        if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
-          snakeDirection = newDir
-          canChangeDirection = false
-        }
-      }
+      applyDirection(event.key)
     }
     document.addEventListener('keydown', changeSnakeDirection)
 
     function setDirection(key) {
-      const directions = {
-        ArrowUp: { x: 0, y: -1 },
-        ArrowDown: { x: 0, y: 1 },
-        ArrowLeft: { x: -1, y: 0 },
-        ArrowRight: { x: 1, y: 0 },
-      }
-      if (key in directions) {
-        const newDir = directions[key]
-        if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
-          snakeDirection = newDir
-          canChangeDirection = false
-        }
+      applyDirection(key)
+    }
+
+    // touch
+    let touchStartX = 0
+    let touchStartY = 0
+
+    function handleTouchStart(event) {
+      const touch = event.changedTouches[0]
+      touchStartX = touch.clientX
+      touchStartY = touch.clientY
+    }
+
+    function handleTouchEnd(event) {
+      const touch = event.changedTouches[0]
+      const dx = touch.clientX - touchStartX
+      const dy = touch.clientY - touchStartY
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+
+      if (Math.max(absDx, absDy) < 20) return
+
+      if (absDx > absDy) {
+        setDirection(dx > 0 ? 'ArrowRight' : 'ArrowLeft')
+      } else {
+        setDirection(dy > 0 ? 'ArrowDown' : 'ArrowUp')
       }
     }
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
+    document.addEventListener('touchend', handleTouchEnd, { passive: true })
+    // ---------
 
     function addNewSnakePart(snake) {
       const lastIndex = snake.length - 1
@@ -184,19 +220,30 @@
       const dx = tail.x - beforeTail.x
       const dy = tail.y - beforeTail.y
 
-      snake.push({
+      const newTail = {
         x: tail.x + dx,
         y: tail.y + dy,
-      })
+      }
+      snake.push(newTail)
+      occupancy[getCellIndex(newTail.x, newTail.y)] = 1
+    }
+
+    const occupancy = new Uint8Array(COLS * ROWS)
+
+    function getCellIndex(x, y) {
+      return y * COLS + x
+    }
+
+    function updateSnakeOccupancy(snake) {
+      occupancy.fill(0)
+      for (let i = 0; i < snake.length; i++) {
+        const segment = snake[i]
+        occupancy[getCellIndex(segment.x, segment.y)] = 1
+      }
     }
 
     function checkSelfCollision(snake, newHead) {
-      for (let i = 0; i < snake.length; i++) {
-        if (newHead.x === snake[i].x && newHead.y === snake[i].y) {
-          return true
-        }
-      }
-      return false
+      return occupancy[getCellIndex(newHead.x, newHead.y)] === 1
     }
 
     // fruit
@@ -206,9 +253,7 @@
     let values = { a: null, b: null }
 
     function isOccupied(x, y, snake) {
-      for (let i = 0; i < snake.length; i++) {
-        if (snake[i].x === x && snake[i].y === y) return true
-      }
+      if (occupancy[getCellIndex(x, y)] === 1) return true
       for (let i = 0; i < extraNormalFruits.length; i++) {
         if (extraNormalFruits[i].x === x && extraNormalFruits[i].y === y)
           return true
@@ -219,15 +264,31 @@
     }
 
     function getEmptyPosition(snake) {
-      let x,
-        y,
-        attempts = 0
-      do {
-        x = Math.floor(Math.random() * COLS)
-        y = Math.floor(Math.random() * ROWS)
-        attempts++
-      } while (isOccupied(x, y, snake) && attempts < 1000)
-      return { x, y }
+      const totalCells = COLS * ROWS
+      const occupiedCount =
+        snake.length +
+        extraNormalFruits.length +
+        (fruit ? 1 : 0) +
+        (resultFruit ? 1 : 0)
+
+      if (occupiedCount >= totalCells) return null
+
+      const maxAttempts = Math.min(32, totalCells - occupiedCount)
+      for (let i = 0; i < maxAttempts; i++) {
+        const x = Math.floor(Math.random() * COLS)
+        const y = Math.floor(Math.random() * ROWS)
+        if (!isOccupied(x, y, snake)) return { x, y }
+      }
+
+      const start = Math.floor(Math.random() * totalCells)
+      for (let i = 0; i < totalCells; i++) {
+        const index = (start + i) % totalCells
+        const x = index % COLS
+        const y = Math.floor(index / COLS)
+        if (!isOccupied(x, y, snake)) return { x, y }
+      }
+
+      return null
     }
 
     function updateExtraFruits(snake) {
@@ -249,16 +310,12 @@
 
       while (currentTotal < targetCount) {
         const pos = getEmptyPosition(snake)
+        if (!pos) break
         const refVal = resultFruit ? resultFruit.value : undefined
-        const newF = createFruit(refVal)
-        if (newF) {
-          newF.x = pos.x
-          newF.y = pos.y
-          extraNormalFruits.push(newF)
-          currentTotal++
-        } else {
-          break
-        }
+        const newF = createFruit(refVal, pos)
+        if (!newF) break
+        extraNormalFruits.push(newF)
+        currentTotal++
       }
 
       while (currentTotal > targetCount && extraNormalFruits.length > 0) {
@@ -267,7 +324,7 @@
       }
     }
 
-    function createFruit(value) {
+    function createFruit(value, position) {
       let newValue = Math.floor(Math.random() * 9) + 1
 
       if (value !== undefined) {
@@ -290,31 +347,36 @@
             value - 4,
             value + 4,
           ]
+          const usedValues = new Set()
+          for (let i = 0; i < extraNormalFruits.length; i++)
+            usedValues.add(extraNormalFruits[i].value)
+          if (fruit) usedValues.add(fruit.value)
 
-          const usedValues = extraNormalFruits.map((f) => f.value)
-          if (fruit) usedValues.push(fruit.value)
+          let optionCount = 0
+          for (let i = 0; i < candidates.length; i++) {
+            const candidate = candidates[i]
+            if (
+              candidate >= 0 &&
+              candidate !== value &&
+              candidate % 2 === value % 2 &&
+              !usedValues.has(candidate)
+            ) {
+              candidates[optionCount++] = candidate
+            }
+          }
 
-          const options = candidates.filter(
-            (v) =>
-              v >= 0 &&
-              v !== value &&
-              v % 2 === value % 2 &&
-              !usedValues.includes(v)
-          )
-
-          if (options.length > 0) {
-            newValue = options[Math.floor(Math.random() * options.length)]
+          if (optionCount > 0) {
+            newValue = candidates[Math.floor(Math.random() * optionCount)]
           } else {
             let fallback = value + 2
-            while (usedValues.includes(fallback) || fallback === value) {
-              fallback += 2
-            }
+            while (usedValues.has(fallback) || fallback === value) fallback += 2
             newValue = fallback
           }
         }
       }
 
-      const pos = getEmptyPosition(SNAKE)
+      const pos = position || getEmptyPosition(SNAKE)
+      if (!pos) return null
 
       return {
         x: pos.x,
@@ -328,9 +390,6 @@
       ctx.fillStyle = '#c33'
       ctx.fillRect(fruit.x * PIXEL, fruit.y * PIXEL, PIXEL, PIXEL)
       ctx.fillStyle = 'snow'
-      ctx.font = `${PIXEL / 1.4}px Fredoka`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
       ctx.fillText(
         fruit.value,
         fruit.x * PIXEL + PIXEL / 2,
@@ -385,7 +444,9 @@
 
           if (values.a && values.b && resultFruit) {
             resetValuesAndFruits()
-            snake.pop()
+            const removedTail = snake.pop()
+            if (removedTail)
+              occupancy[getCellIndex(removedTail.x, removedTail.y)] = 0
             updateValues()
             break
           }
@@ -402,6 +463,7 @@
 
     function createResultFruit({ a, b }) {
       const pos = getEmptyPosition(SNAKE)
+      if (!pos) return null
       return {
         x: pos.x,
         y: pos.y,
@@ -422,8 +484,40 @@
     }
 
     // game
-    let gameInterval = null
     let currentSpeed = 100
+    let rafId = null
+    let running = false
+    let lastTime = 0
+    let accumulator = 0
+
+    function startLoop() {
+      if (running) return
+      running = true
+      lastTime = performance.now()
+      accumulator = 0
+      rafId = requestAnimationFrame(loop)
+    }
+
+    function stopLoop() {
+      running = false
+      if (rafId !== null) cancelAnimationFrame(rafId)
+      rafId = null
+    }
+
+    function loop(now) {
+      if (!running) return
+      let delta = now - lastTime
+      lastTime = now
+      if (delta > 250) delta = 250 // evita salto grande ao voltar de uma aba em background
+
+      accumulator += delta
+      while (running && accumulator >= currentSpeed) {
+        gameLoop(CTX, SNAKE)
+        accumulator -= currentSpeed
+      }
+
+      if (running) rafId = requestAnimationFrame(loop)
+    }
 
     function getLevel(snake) {
       const score = Math.max(0, snake.length - 3)
@@ -439,14 +533,7 @@
     function checkSpeed(snake) {
       const level = getLevel(snake)
       const targetSpeed = Math.max(50, 100 - (level - 1) * 5)
-
-      if (targetSpeed !== currentSpeed) {
-        currentSpeed = targetSpeed
-        if (gameInterval) clearInterval(gameInterval)
-        gameInterval = setInterval(() => {
-          gameLoop(CTX, snake)
-        }, currentSpeed)
-      }
+      currentSpeed = targetSpeed
     }
 
     function getRandomIntInclusive(min, max) {
@@ -458,23 +545,21 @@
       snake.push({ x: 3, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 })
       snakeDirection = { x: 1, y: 0 }
       currentSpeed = 100
+      displayedScore = -1
+      displayedLevel = -1
 
-      document.getElementById('game-over').classList.add('hidden')
+      gameOverDisplay.classList.add('hidden')
 
       resetValuesAndFruits()
+      updateSnakeOccupancy(snake)
       updateValues()
 
-      if (gameInterval) clearInterval(gameInterval)
-      gameInterval = setInterval(() => {
-        gameLoop(CTX, snake)
-      }, currentSpeed)
+      stopLoop()
+      startLoop()
     }
 
     function gameOver(snake) {
-      if (gameInterval) {
-        clearInterval(gameInterval)
-        gameInterval = null
-      }
+      stopLoop()
       showGameOver(snake)
     }
 
@@ -504,52 +589,56 @@
     }
 
     // UI
-    function updateHUD(snake) {
-      const levelDisplay = document.getElementById('level-display')
-      const scoreDisplay = document.getElementById('score-display')
+    let displayedScore = -1
+    let displayedLevel = -1
 
+    function updateHUD(snake) {
       const score = Math.max(0, snake.length - 3)
       const level = getLevel(snake)
 
-      if (levelDisplay) levelDisplay.innerText = `nível: ${level}`
-      if (scoreDisplay) scoreDisplay.innerText = `${score} pts`
+      if (level !== displayedLevel) {
+        displayedLevel = level
+        levelDisplay.innerText = `nível: ${level}`
+      }
+      if (score !== displayedScore) {
+        displayedScore = score
+        scoreDisplay.innerText = `${score} pts`
+      }
     }
 
     function updateValues() {
       const { a, b } = values
-      const leftNum = document
-          .querySelector('.calc-container > .calc > div.left-number')
-          .querySelector('span'),
-        rightNum = document
-          .querySelector('.calc-container > .calc > div.right-number')
-          .querySelector('span')
-
-      leftNum.innerHTML = '?'
-      rightNum.innerHTML = '?'
-      if (a !== null) leftNum.innerHTML = a
-      if (b !== null) rightNum.innerHTML = b
-
+      leftNumber.textContent = a === null ? '?' : a
+      rightNumber.textContent = b === null ? '?' : b
       updateHUD(SNAKE)
     }
 
     function showGameOver(snake) {
       const score = Math.max(0, snake.length - 3)
-      document.getElementById('final-score').innerText = `${score} pts`
-      document.getElementById('game-over').classList.remove('hidden')
+      finalScoreDisplay.innerText = `${score} pts`
+      gameOverDisplay.classList.remove('hidden')
     }
 
     // main
     function init(ctx, snake) {
       resetValuesAndFruits()
+      updateSnakeOccupancy(snake)
       updateValues()
-      gameInterval = setInterval(() => {
-        gameLoop(ctx, snake)
-      }, currentSpeed)
+      startLoop()
     }
 
-    document.getElementById('restart-btn').addEventListener('click', () => {
-      document.getElementById('game-over').classList.add('hidden')
+    restartButton.addEventListener('click', () => {
+      gameOverDisplay.classList.add('hidden')
       resetGame(SNAKE)
+    })
+
+    const controlButtons = document.querySelectorAll(
+      '.ctrl-btn[data-direction]'
+    )
+    controlButtons.forEach((button) => {
+      button.addEventListener('click', () =>
+        setDirection(button.dataset.direction)
+      )
     })
 
     init(CTX, SNAKE)

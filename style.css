@@ -3,13 +3,7 @@
   src: url('./assets/Fredoka-Regular.ttf');
   font-weight: 400;
   font-style: normal;
-}
-
-@font-face {
-  font-family: 'Fredoka';
-  src: url('./assets/Fredoka-SemiBold.ttf');
-  font-weight: 600;
-  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -17,6 +11,7 @@
   src: url('./assets/Fredoka-Bold.ttf');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 :root {
@@ -123,63 +118,81 @@ main {
 
 .controls {
   display: none;
-  align-items: flex-end;
-  justify-content: space-between;
-  width: 100%;
-  position: fixed;
-  bottom: 0.6rem;
-  padding: 0 0.6rem;
 }
 
 @media (max-width: 768px) {
   .controls {
     display: flex;
-    gap: 0.8rem;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: 6.3rem;
+    height: 6.3rem;
+    border-radius: 50%;
+    padding: 0.6rem;
+    gap: 0;
   }
 }
 
 .ctrl-container {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-
-  &.up-down {
-    flex-direction: column;
-  }
-
-  &.left-right, &.up-down {
-    gap: 0.7rem;
-  }
+  display: contents;
 }
 
 button.ctrl-btn {
   all: unset;
+  position: absolute;
   display: flex;
   justify-content: center;
-  background-color: #FFFAFAC0;
-  box-shadow: 0 4px 0 #24220140;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.8rem;
+  align-items: center;
+  border-radius: 50%;
+  background-color: #fffafa96;
+  box-shadow: 0 3px 0 #24220140;
   touch-action: manipulation;
   font-size: larger;
+  width: 1.9rem;
+  height: 1.9rem;
+  line-height: 1;
+  text-align: center;
+  padding: 0;
+}
 
+button.ctrl-btn.up,
+button.ctrl-btn.down {
+  left: 50%;
+  margin-left: -0.875rem;
+}
+
+button.ctrl-btn.up {
+  top: 0.4rem;
+}
+
+button.ctrl-btn.down {
+  bottom: 0.4rem;
+}
+
+button.ctrl-btn.left,
+button.ctrl-btn.right {
+  top: 50%;
+  margin-top: -0.875rem;
+  
   & span {
-    align-self: center;
-    width: fit-content;
+    margin-bottom: 0.5rem;
   }
+}
 
-  &.up span {
-    transform: rotate(-90deg);
-  }
+button.ctrl-btn.left {
+  left: 0.4rem;
+}
 
-  &.left span {
-    transform: rotate(-180deg);
-  }
+button.ctrl-btn.right {
+  right: 0.4rem;
+}
 
-  &.down span {
-    transform: rotate(90deg);
-  }
+button.ctrl-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #24220140;
 }
 
 /* game over */
