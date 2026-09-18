@@ -45,10 +45,8 @@
         <button id="restart-btn" class="restart-btn">Jogar Novamente</button>
       </div>
     </main>
+
     <footer class="controls">
-      <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
-        <span>⟹</span>
-      </button>
       <div class="ctrl-container up-down">
         <button class="ctrl-btn up" onclick="setDirection('ArrowUp')">
           <span>⟹</span>
@@ -57,9 +55,16 @@
           <span>⟹</span>
         </button>
       </div>
-      <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
-        <span>⟹</span>
-      </button>
+
+      <div class="ctrl-container left-right">
+        <button class="ctrl-btn left" onclick="setDirection('ArrowLeft')">
+          <span>⟹</span>
+        </button>
+
+        <button class="ctrl-btn right" onclick="setDirection('ArrowRight')">
+          <span>⟹</span>
+        </button>
+      </div>
     </footer>
   </body>
 
@@ -82,8 +87,11 @@
     const PIXEL = getPixelValue(bodyWidth, bodyHeight),
       CANVAS = document.body.querySelector('main > #screen'),
       CTX = CANVAS.getContext('2d')
-    CANVAS.width = bodyWidth
-    CANVAS.height = bodyHeight
+
+    const COLS = Math.floor(bodyWidth / PIXEL)
+    const ROWS = Math.floor(bodyHeight / PIXEL)
+    CANVAS.width = COLS * PIXEL
+    CANVAS.height = ROWS * PIXEL
 
     // snake
     const SNAKE = [
@@ -103,7 +111,11 @@
       }
     }
 
+    let snakeDirection = { x: 1, y: 0 }
+    let canChangeDirection = true
     function moveSnake(ctx, snake) {
+      canChangeDirection = true
+
       const head = snake[0]
       let newHead = {
         x: head.x + snakeDirection.x,
@@ -111,14 +123,14 @@
       }
 
       if (newHead.x < 0) {
-        newHead.x = Math.floor(bodyWidth / PIXEL)
-      } else if (newHead.x * PIXEL >= bodyWidth) {
+        newHead.x = COLS - 1
+      } else if (newHead.x >= COLS) {
         newHead.x = 0
       }
 
       if (newHead.y < 0) {
-        newHead.y = Math.floor(bodyHeight / PIXEL)
-      } else if (newHead.y * PIXEL >= bodyHeight) {
+        newHead.y = ROWS - 1
+      } else if (newHead.y >= ROWS) {
         newHead.y = 0
       }
 
@@ -131,7 +143,6 @@
       snake.pop()
     }
 
-    let snakeDirection = { x: 1, y: 0 }
     function changeSnakeDirection(event) {
       const directions = {
         ArrowUp: { x: 0, y: -1 },
@@ -143,6 +154,7 @@
         const newDir = directions[event.key]
         if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
           snakeDirection = newDir
+          canChangeDirection = false
         }
       }
     }
@@ -159,6 +171,7 @@
         const newDir = directions[key]
         if (newDir.x !== -snakeDirection.x || newDir.y !== -snakeDirection.y) {
           snakeDirection = newDir
+          canChangeDirection = false
         }
       }
     }
@@ -206,14 +219,12 @@
     }
 
     function getEmptyPosition(snake) {
-      const cols = Math.floor(bodyWidth / PIXEL)
-      const rows = Math.floor(bodyHeight / PIXEL)
       let x,
         y,
         attempts = 0
       do {
-        x = Math.floor(Math.random() * cols)
-        y = Math.floor(Math.random() * rows)
+        x = Math.floor(Math.random() * COLS)
+        y = Math.floor(Math.random() * ROWS)
         attempts++
       } while (isOccupied(x, y, snake) && attempts < 1000)
       return { x, y }

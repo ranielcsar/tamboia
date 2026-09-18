@@ -22,7 +22,7 @@
 :root {
   font-family: 'Fredoka';
   font-weight: 400;
-  font-size: 2.3ch;
+  font-size: 2.5ch;
 }
 
 * {
@@ -39,7 +39,7 @@ body {
   height: 100%;
   overflow: hidden;
   touch-action: none;
-  position: fixed;
+  position: relative;
   inset: 0;
 }
 
@@ -48,10 +48,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
 }
 
 header.calc-container {
@@ -127,10 +123,12 @@ main {
 
 .controls {
   display: none;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: space-between;
   width: 100%;
-  margin-bottom: 0.3rem;
+  position: fixed;
+  bottom: 0.6rem;
+  padding: 0 0.6rem;
 }
 
 @media (max-width: 768px) {
@@ -142,12 +140,15 @@ main {
 
 .ctrl-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: baseline;
+  justify-content: space-between;
 
   &.up-down {
     flex-direction: column;
-    gap: 0.3rem;
+  }
+
+  &.left-right, &.up-down {
+    gap: 0.7rem;
   }
 }
 
@@ -161,21 +162,24 @@ button.ctrl-btn {
   height: 2.5rem;
   border-radius: 0.8rem;
   touch-action: manipulation;
-  font-size: 2.5rem;
+  font-size: larger;
 
   & span {
     align-self: center;
     width: fit-content;
   }
 
-  &.left span {
+  &.up span {
     transform: rotate(-90deg);
   }
 
-  &.down span {
-    transform: rotate(180deg);
+  &.left span {
+    transform: rotate(-180deg);
   }
-<<<<<<< HEAD
+
+  &.down span {
+    transform: rotate(90deg);
+  }
 }
 
 /* game over */
@@ -218,10 +222,5 @@ button.ctrl-btn {
   &:active {
     transform: translateY(2px);
     box-shadow: 0 2px 0 #24220140;
-=======
-
-  &.right span {
-    transform: rotate(90deg);
->>>>>>> dc02fd55881fe411dea855724852070f73af4fae
   }
 }
