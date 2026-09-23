@@ -1,6 +1,6 @@
-> - [Trello](https://trello.com/b/ft4tlqL5/tamboia)
-> - [Figma](https://www.figma.com/design/FvqAk3cyCMq6SUEQDKd2yG/Tamboia?node-id=0-1&t=6b0yew7qqc1UCv4x-1)
-> - [Versão online](https://ranielcsar.github.io/tamboia/)
+> - [Trello](https://trello.com/b/ft4tlqL5/tamboia) contendo sprints (Scrum);
+> - [Figma](https://www.figma.com/design/FvqAk3cyCMq6SUEQDKd2yG/Tamboia?node-id=0-1&t=6b0yew7qqc1UCv4x-1) contendo as telas pensadas para o jogo;
+> - [Versão online](https://ranielcsar.github.io/tamboia/) para jogar :D
 
 # **Sobre o jogo**
 
