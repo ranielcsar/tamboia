@@ -62,7 +62,6 @@ function addNewSnakePart(snake) {
   const newTail = {
     x: tail.x + dx,
     y: tail.y + dy,
-    createdAt: performance.now(),
   }
   snake.push(newTail)
   occupancy[getCellIndex(newTail.x, newTail.y)] = 1
