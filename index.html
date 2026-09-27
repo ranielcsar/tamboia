@@ -18,6 +18,7 @@
 
   <body>
     <header class="calc-container">
+      <button id="theme-btn" class="theme-btn">🎨</button>
       <div class="game-info left">
         <span id="level-display">nível: 1</span>
       </div>
@@ -64,20 +65,13 @@
     </footer>
   </body>
 
-  <script src="js/init-config.js"></script>
-  <script src="js/snake.js"></script>
-  <script src="js/fruit.js"></script>
-  <script src="js/game.js"></script>
-  <script src="js/controls.js"></script>
-  <script src="js/game-ui.js"></script>
-  <script>
-    function init(snake) {
-      resetValuesAndFruits()
-      updateSnakeOccupancy(snake)
-      updateValues()
-      startLoop()
-    }
-
-    init(SNAKE)
-  </script>
+  <script type="module" src="js/config.js"></script>
+  <script type="module" src="js/state.js"></script>
+  <script type="module" src="js/snake.js"></script>
+  <script type="module" src="js/fruit.js"></script>
+  <script type="module" src="js/render.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  <script type="module" src="js/controls.js"></script>
+  <script type="module" src="js/game.js"></script>
+  <script type="module" src="js/main.js"></script>
 </html>

@@ -18,6 +18,11 @@
   font-family: 'Fredoka';
   font-weight: 400;
   font-size: 2.5ch;
+  --bg: khaki;
+  --text: #161619;
+  --ui-text: #161619;
+  --stroke: #161619;
+  --fruit: #c33;
 }
 
 * {
@@ -39,7 +44,8 @@ body {
 }
 
 body {
-  background: khaki;
+  background: var(--bg, khaki);
+  color: var(--ui-text);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,9 +67,15 @@ header.calc-container {
     flex: 2;
     font-size: 2ch;
 
-    &>div {
-      border: 2px solid #161619;
-      background: snow;
+    & > span {
+      color: var(--ui-text);
+      font-weight: 700;
+    }
+
+    & > div {
+      border: 2px solid var(--ui-text);
+      background: var(--bg);
+      color: var(--ui-text);
       border-radius: 200px;
       width: 2rem;
       height: 2rem;
@@ -77,6 +89,7 @@ header.calc-container {
     font-size: 1.5ch;
     flex: 1;
     text-align: center;
+    color: var(--ui-text);
 
     &.right {
       margin-right: 0.5rem;
@@ -94,7 +107,7 @@ main {
 }
 
 #screen {
-  border: 2px dashed #16161d;
+  border: 2px dashed var(--ui-text);
   width: 100%;
 }
 
@@ -176,7 +189,7 @@ button.ctrl-btn.left,
 button.ctrl-btn.right {
   top: 50%;
   margin-top: -0.875rem;
-  
+
   & span {
     margin-bottom: 0.5rem;
   }
@@ -199,13 +212,19 @@ button.ctrl-btn:active {
 .game-over {
   position: absolute;
   inset: 0;
-  background: rgba(22, 22, 25, 0.85);
+  background: color-mix(in srgb, #16161d 70%, var(--bg));
+  color: snow;
+  border-radius: 5px;
   display: flex;
+  width: 90%;
+  max-width: 20rem;
+  height: 18rem;
+  margin: auto;
+  padding: 20px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  color: snow;
   z-index: 10;
 
   &.hidden {
@@ -215,18 +234,20 @@ button.ctrl-btn:active {
   & h2 {
     font-size: 2.5ch;
     font-weight: 700;
+    color: inherit;
   }
 
   & p {
     font-size: 1.8ch;
+    color: inherit;
   }
 }
 
 .restart-btn {
   all: unset;
   padding: 0.6rem 1.5rem;
-  background: seagreen;
-  color: snow;
+  background: var(--fruit);
+  color: var(--ui-text);
   border-radius: 200px;
   font-size: 1.6ch;
   cursor: pointer;
@@ -236,4 +257,8 @@ button.ctrl-btn:active {
     transform: translateY(2px);
     box-shadow: 0 2px 0 #24220140;
   }
+}
+
+#theme-btn {
+  all: unset;
 }

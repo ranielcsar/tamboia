@@ -1,103 +1,93 @@
-let currentSpeed = 100
-let rafId = null
-let running = false
-let lastTime = 0
-let accumulator = 0
+import { moveSnake } from './snake.js'
+import {
+  hasEatedFruit,
+  createFruit,
+  createResultFruit,
+  updateExtraFruits,
+  resetValuesAndFruits,
+} from './fruit.js'
+import { render } from './render.js'
+import { updateValues, showGameOver } from './ui.js'
 
-function startLoop() {
-  if (running) return
-  running = true
-  lastTime = performance.now()
-  accumulator = 0
-  rafId = requestAnimationFrame(loop)
-}
-
-function stopLoop() {
-  running = false
-  if (rafId !== null) cancelAnimationFrame(rafId)
-  rafId = null
-}
-
-function loop(now) {
-  if (!running) return
-  let delta = now - lastTime
-  lastTime = now
-  if (delta > 250) delta = 250 // evita salto grande ao voltar de uma aba em background
-
-  accumulator += delta
-  while (running && accumulator >= currentSpeed) {
-    gameLoop(CTX, SNAKE)
-    accumulator -= currentSpeed
-  }
-
-  if (running) rafId = requestAnimationFrame(loop)
-}
-
-function getLevel(snake) {
-  const score = Math.max(0, snake.length - 3)
-  return Math.floor(score / 10) + 1
-}
-
-function getTargetFruitCount(snake) {
-  const level = getLevel(snake)
-  if (level <= 1) return 2
-  return Math.min(1 + level, 6)
-}
-
-function checkSpeed(snake) {
-  const level = getLevel(snake)
-  const targetSpeed = Math.max(50, 100 - (level - 1) * 5)
-  currentSpeed = targetSpeed
-}
-
-function getRandomIntInclusive(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-function resetGame(snake) {
-  snake.length = 0
-  snake.push({ x: 3, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 })
-  snakeDirection = { x: 1, y: 0 }
-  currentSpeed = 100
-  displayedScore = -1
-  displayedLevel = -1
-
-  gameOverDisplay.classList.add('hidden')
-
-  resetValuesAndFruits()
-  updateSnakeOccupancy(snake)
-  updateValues()
-
-  stopLoop()
-  startLoop()
-}
-
-function gameOver(snake) {
-  stopLoop()
-  showGameOver(snake)
-}
-
-function gameLoop(ctx, snake) {
-  if (snake.length < 3) {
-    gameOver(snake)
+export function gameLoop(ctx, state, dom) {
+  if (state.snake.length < 3) {
+    gameOver(state, dom)
     return
   }
 
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-  moveSnake(snake)
-  drawSnakeBody(ctx, snake)
-  hasEatedFruit(snake)
-
-  if (values.a !== null && values.b !== null && !resultFruit) {
-    resultFruit = createResultFruit({ a: values.a, b: values.b })
-    fruit = createFruit(resultFruit.value)
+  const alive = moveSnake(state)
+  if (!alive) {
+    gameOver(state, dom)
+    return
   }
 
-  updateExtraFruits(snake)
+  hasEatedFruit(state)
 
-  if (fruit) drawFruit(ctx, fruit)
-  if (resultFruit) drawFruit(ctx, resultFruit)
-  for (let i = 0; i < extraNormalFruits.length; i++) {
-    drawFruit(ctx, extraNormalFruits[i])
+  if (
+    state.values.a !== null &&
+    state.values.b !== null &&
+    !state.resultFruit
+  ) {
+    state.resultFruit = createResultFruit(state, state.values.a, state.values.b)
+    state.fruit = createFruit(state, state.resultFruit.value)
   }
+
+  updateExtraFruits(state)
+  updateValues(state, dom)
+  render(ctx, state)
+}
+
+export function startLoop(ctx, state, dom) {
+  if (state.running) return
+  state.running = true
+  state.lastTime = performance.now()
+  state.accumulator = 0
+  state.rafId = requestAnimationFrame((t) => loop(t, ctx, state, dom))
+}
+
+export function stopLoop(state) {
+  state.running = false
+  if (state.rafId !== null) cancelAnimationFrame(state.rafId)
+  state.rafId = null
+}
+
+function loop(now, ctx, state, dom) {
+  if (!state.running) return
+  let delta = now - state.lastTime
+  state.lastTime = now
+  if (delta > 250) delta = 250
+
+  state.accumulator += delta
+  while (state.running && state.accumulator >= state.currentSpeed) {
+    gameLoop(ctx, state, dom)
+    state.accumulator -= state.currentSpeed
+  }
+
+  if (state.running)
+    state.rafId = requestAnimationFrame((t) => loop(t, ctx, state, dom))
+}
+
+function gameOver(state, dom) {
+  stopLoop(state)
+  showGameOver(state, dom)
+}
+
+export function resetGame(state, dom, ctx) {
+  resetValuesAndFruits(state)
+  state.values = { a: null, b: null }
+  state.fruit = createFruit(state)
+  state.resultFruit = null
+  state.extraNormalFruits = []
+  state.currentSpeed = 100
+
+  dom.gameOverDisplay.classList.add('hidden')
+
+  state.snake.length = 0
+  state.snake.push({ x: 3, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 1 })
+  state.direction = { x: 1, y: 0 }
+  state.occupancy.fill(0)
+  for (const s of state.snake) state.occupancy[s.y * state.cols + s.x] = 1
+
+  stopLoop(state)
+  startLoop(ctx, state, dom)
 }
