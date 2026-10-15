@@ -34,7 +34,6 @@ export function gameLoop(ctx, state, dom) {
 
   updateExtraFruits(state)
   updateValues(state, dom)
-  render(ctx, state)
 }
 
 export function startLoop(ctx, state, dom) {
@@ -58,10 +57,14 @@ function loop(now, ctx, state, dom) {
   if (delta > 250) delta = 250
 
   state.accumulator += delta
+  let stepped = false
   while (state.running && state.accumulator >= state.currentSpeed) {
     gameLoop(ctx, state, dom)
     state.accumulator -= state.currentSpeed
+    stepped = true
   }
+
+  if (stepped) render(ctx, state)
 
   if (state.running)
     state.rafId = requestAnimationFrame((t) => loop(t, ctx, state, dom))
@@ -79,6 +82,7 @@ export function resetGame(state, dom, ctx) {
   state.resultFruit = null
   state.extraNormalFruits = []
   state.currentSpeed = 100
+  state.queuedDirection = null
 
   dom.gameOverDisplay.classList.add('hidden')
 

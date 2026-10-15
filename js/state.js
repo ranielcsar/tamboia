@@ -10,7 +10,7 @@ export function createState(cols, rows) {
     // cobra
     snake: CONFIG.initialSnake.map((s) => ({ ...s })),
     direction: { ...CONFIG.initialDirection },
-    canChangeDirection: true,
+    queuedDirection: null,
 
     // frutas
     fruit: null,
@@ -37,7 +37,7 @@ export function createState(cols, rows) {
 export function resetState(state) {
   state.snake = CONFIG.initialSnake.map((s) => ({ ...s }))
   state.direction = { ...CONFIG.initialDirection }
-  state.canChangeDirection = true
+  state.queuedDirection = null
   state.fruit = null
   state.resultFruit = null
   state.extraNormalFruits = []

@@ -8,24 +8,23 @@ const DIRECTIONS = {
 export function applyDirection(state, key) {
   const newDir = DIRECTIONS[key]
   if (!newDir) return
-  if (newDir.x !== -state.direction.x || newDir.y !== -state.direction.y) {
-    state.direction = newDir
-    state.canChangeDirection = false
-  }
+
+  const last = state.queuedDirection || state.direction
+  if (newDir.x === -last.x && newDir.y === -last.y) return
+  if (newDir.x === last.x && newDir.y === last.y) return
+
+  state.queuedDirection = newDir
 }
 
 export function bindControls(state, controlButtons) {
-  // teclado
   document.addEventListener('keydown', (e) => applyDirection(state, e.key))
 
-  // botões on-screen
   controlButtons.forEach((btn) => {
     btn.addEventListener('click', () =>
       applyDirection(state, btn.dataset.direction)
     )
   })
 
-  // touch
   let startX = 0
   let startY = 0
 

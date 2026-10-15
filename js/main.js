@@ -4,13 +4,13 @@ import { bindControls } from './controls.js'
 import { startLoop, resetGame } from './game.js'
 import { updateValues } from './ui.js'
 import { render } from './render.js'
-;(function Game() {
-  // ===== DOM =====
-  const main = document.body.querySelector('main')
-  const width = main.offsetWidth
-  const height = main.offsetHeight
+import { bindScreens, showScreen } from './screens.js'
 
-  const PIXEL = getPixelValue(width, height)
+function Game() {
+  bindScreens()
+  showScreen('menu')
+
+  const main = document.querySelector('#screen-game main')
   const canvas = main.querySelector('#screen')
   const ctx = canvas.getContext('2d')
 
@@ -25,30 +25,9 @@ import { render } from './render.js'
     controlButtons: document.querySelectorAll('.ctrl-btn[data-direction]'),
   }
 
-  const COLS = Math.floor(width / PIXEL)
-  const ROWS = Math.floor(height / PIXEL)
-  canvas.width = COLS * PIXEL
-  canvas.height = ROWS * PIXEL
+  let state = null
+  let controlsBound = false
 
-  ctx.strokeStyle = getTheme().stroke
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.font = `${PIXEL / 1.4}px Fredoka`
-
-  // ===== Estado =====
-  const state = createState(COLS, ROWS)
-  state.pixel = PIXEL
-
-  // ===== Bind =====
-  bindControls(state, dom.controlButtons)
-  dom.restartButton.addEventListener('click', () => resetGame(state, dom, ctx))
-
-  // ===== Start =====
-  resetGame(state, dom, ctx)
-  updateValues(state, dom)
-  startLoop(ctx, state, dom)
-
-  // ===== Helpers =====
   function getPixelValue(w, h) {
     let wd = 16,
       hd = 9
@@ -57,7 +36,43 @@ import { render } from './render.js'
     return Math.min(Math.floor(w / wd), Math.floor(h / hd))
   }
 
-  // ===== Tema =====
+  function setupCanvas() {
+    const width = main.clientWidth
+    const height = main.clientHeight
+
+    const PIXEL = getPixelValue(width, height)
+    const COLS = Math.max(1, Math.floor(width / PIXEL))
+    const ROWS = Math.max(1, Math.floor(height / PIXEL))
+
+    canvas.width = COLS * PIXEL
+    canvas.height = ROWS * PIXEL
+
+    ctx.strokeStyle = getTheme().stroke
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = `${PIXEL / 1.4}px Fredoka`
+
+    state = createState(COLS, ROWS)
+    state.pixel = PIXEL
+
+    if (!controlsBound) {
+      bindControls(state, dom.controlButtons)
+      dom.restartButton.addEventListener('click', () =>
+        resetGame(state, dom, ctx)
+      )
+      controlsBound = true
+    }
+
+    return state
+  }
+
+  window.addEventListener('game:start', () => {
+    if (!state) setupCanvas()
+    resetGame(state, dom, ctx)
+    updateValues(state, dom)
+    startLoop(ctx, state, dom)
+  })
+
   function applyThemeToCanvas() {
     const t = getTheme()
     ctx.strokeStyle = t.stroke
@@ -67,17 +82,14 @@ import { render } from './render.js'
   function applyTheme(name) {
     setTheme(name)
     const t = getTheme()
-
-    // CSS vars para o HUD (header, botão, game-over)
     const root = document.documentElement.style
     root.setProperty('--bg', t.background)
     root.setProperty('--text', t.text)
     root.setProperty('--ui-text', t.uiText)
     root.setProperty('--stroke', t.stroke)
     root.setProperty('--fruit', t.fruit)
-
     applyThemeToCanvas()
-    render(ctx, state)
+    if (state) render(ctx, state)
   }
 
   const themeBtn = document.getElementById('theme-btn')
@@ -88,6 +100,7 @@ import { render } from './render.js'
     applyTheme(themeNames[themeIndex])
   })
 
-  // expõe para o console / botões futuros
   window.setGameTheme = applyTheme
-})()
+}
+
+Game()

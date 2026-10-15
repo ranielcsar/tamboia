@@ -1,5 +1,3 @@
-import { CONFIG } from './config.js'
-
 export function getCellIndex(state, x, y) {
   return y * state.cols + x
 }
@@ -16,7 +14,13 @@ export function checkSelfCollision(state, head) {
 }
 
 export function moveSnake(state) {
-  state.canChangeDirection = true
+  if (state.queuedDirection) {
+    const q = state.queuedDirection
+    if (!(q.x === -state.direction.x && q.y === -state.direction.y)) {
+      state.direction = q
+    }
+    state.queuedDirection = null
+  }
 
   const head = state.snake[0]
   const newHead = {
@@ -24,15 +28,16 @@ export function moveSnake(state) {
     y: head.y + state.direction.y,
   }
 
-  // wrap
   if (newHead.x < 0) newHead.x = state.cols - 1
   else if (newHead.x >= state.cols) newHead.x = 0
   if (newHead.y < 0) newHead.y = state.rows - 1
   else if (newHead.y >= state.rows) newHead.y = 0
 
-  if (checkSelfCollision(state, newHead)) return false
-
   const tail = state.snake[state.snake.length - 1]
+  const isTail = newHead.x === tail.x && newHead.y === tail.y
+
+  if (!isTail && checkSelfCollision(state, newHead)) return false
+
   state.snake.unshift(newHead)
   state.snake.pop()
 

@@ -19,10 +19,17 @@
   font-weight: 400;
   font-size: 2.5ch;
   --bg: khaki;
-  --text: #161619;
+  --text: snow;
   --ui-text: #161619;
   --stroke: #161619;
   --fruit: #c33;
+  --shadow-color: #24220140;
+  --shadow: 0 4px 0 var(--shadow-color);
+  --shadow-active: 0 2px 0 var(--shadow-color);
+}
+
+.menu-btn {
+  color: var(--text) !important;
 }
 
 * {
@@ -161,7 +168,7 @@ button.ctrl-btn {
   align-items: center;
   border-radius: 50%;
   background-color: #fffafa96;
-  box-shadow: 0 3px 0 #24220140;
+  box-shadow: var(--shadow);
   touch-action: manipulation;
   font-size: larger;
   width: 1.9rem;
@@ -205,7 +212,7 @@ button.ctrl-btn.right {
 
 button.ctrl-btn:active {
   transform: translateY(2px);
-  box-shadow: 0 1px 0 #24220140;
+  box-shadow: var(--shadow-active);
 }
 
 /* game over */
@@ -251,14 +258,110 @@ button.ctrl-btn:active {
   border-radius: 200px;
   font-size: 1.6ch;
   cursor: pointer;
-  box-shadow: 0 4px 0 #24220140;
+  box-shadow: var(--shadow);
 
   &:active {
     transform: translateY(2px);
-    box-shadow: 0 2px 0 #24220140;
+    box-shadow: var(--shadow-active);
   }
 }
 
 #theme-btn {
   all: unset;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+#screen-game {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.menu-header {
+  margin-top: 20vh;
+  text-align: center;
+}
+
+.menu-header h1 {
+  font-size: 5ch;
+  letter-spacing: 0.2rem;
+  color: var(--ui-text);
+}
+
+.menu-nav {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 16rem;
+}
+
+.menu-btn {
+  all: unset;
+  text-align: center;
+  padding: 0.8rem 1.5rem;
+  background: var(--fruit);
+  color: var(--ui-text);
+  border-radius: 200px;
+  font-size: 1.8ch;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.menu-btn:active {
+  transform: translateY(2px);
+  box-shadow: var(--shadow-active);
+}
+
+.screen-header {
+  width: 100%;
+  max-width: 72rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.screen-header h2 {
+  font-size: 2.5ch;
+  font-weight: 700;
+  color: var(--ui-text);
+}
+
+.back-btn {
+  all: unset;
+  cursor: pointer;
+  font-size: 2ch;
+  color: var(--ui-text);
+  padding: 0.4rem 0.8rem;
+  border-radius: 200px;
+  background: #fffafa96;
+  box-shadow: var(--shadow);
+}
+
+.back-btn:active {
+  transform: translateY(2px);
+  box-shadow: var(--shadow-active);
+}
+
+.screen-content {
+  width: 95%;
+  max-width: 40rem;
+  padding: 1rem;
+  line-height: 1.5;
+  font-size: 1.7ch;
+  color: var(--ui-text);
+  overflow: auto;
 }

@@ -1,10 +1,8 @@
 import { getTheme } from './config.js'
 
-export function drawSnake(ctx, state) {
+export function drawSnake(ctx, state, theme) {
   const { snake, pixel } = state
   if (snake.length === 0) return
-
-  const theme = getTheme()
 
   ctx.fillStyle = theme.head
   ctx.fillRect(snake[0].x * pixel, snake[0].y * pixel, pixel, pixel)
@@ -18,10 +16,9 @@ export function drawSnake(ctx, state) {
   }
 }
 
-export function drawFruit(ctx, state, fruit) {
+export function drawFruit(ctx, state, fruit, theme) {
   if (!fruit) return
   const { pixel } = state
-  const theme = getTheme()
 
   ctx.fillStyle = theme.fruit
   ctx.fillRect(fruit.x * pixel, fruit.y * pixel, pixel, pixel)
@@ -34,9 +31,10 @@ export function drawFruit(ctx, state, fruit) {
 }
 
 export function render(ctx, state) {
+  const theme = getTheme()
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-  drawSnake(ctx, state)
-  if (state.fruit) drawFruit(ctx, state, state.fruit)
-  if (state.resultFruit) drawFruit(ctx, state, state.resultFruit)
-  for (const f of state.extraNormalFruits) drawFruit(ctx, state, f)
+  drawSnake(ctx, state, theme)
+  if (state.fruit) drawFruit(ctx, state, state.fruit, theme)
+  if (state.resultFruit) drawFruit(ctx, state, state.resultFruit, theme)
+  for (const f of state.extraNormalFruits) drawFruit(ctx, state, f, theme)
 }
