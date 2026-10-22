@@ -318,14 +318,39 @@ button.ctrl-btn:active {
   font-size: 1.8ch;
   cursor: pointer;
   box-shadow: var(--shadow);
+  position: relative;
 }
 
-.menu-btn:active {
-  transform: translateY(2px);
-  box-shadow: var(--shadow-active);
+.menu-btn:hover::after {
+  content: '🐍';
+  position: absolute;
+  right: 1.2rem;
+}
+
+button {
+  transition: all 0.2s !important;
+
+  &:hover {
+    transform: translateY(2px);
+    box-shadow: var(--shadow-active);
+  }
+
+  &:active {
+    transform: translateY(0px);
+    box-shadow: var(--shadow-active);
+  }
 }
 
 .screen-header {
+  display: flex;
+  width: 100%;
+  padding-top: 2rem;
+  max-width: 38rem;
+  gap: 2rem;
+  align-items: center;
+}
+
+button .screen-header {
   width: 100%;
   max-width: 72rem;
   display: flex;
@@ -351,15 +376,11 @@ button.ctrl-btn:active {
   box-shadow: var(--shadow);
 }
 
-.back-btn:active {
-  transform: translateY(2px);
-  box-shadow: var(--shadow-active);
-}
-
 .screen-content {
   width: 95%;
   max-width: 40rem;
   padding: 1rem;
+  margin-top: 2rem;
   line-height: 1.5;
   font-size: 1.7ch;
   color: var(--ui-text);
