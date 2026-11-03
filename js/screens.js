@@ -12,7 +12,7 @@ export function showScreen(name) {
 export function bindScreens() {
   document.getElementById('btn-start')?.addEventListener('click', () => {
     showScreen('game')
-    window.dispatchEvent(new CustomEvent('game:start'))
+    window.dispatchEvent(new CustomEvent('game:tutorial'))
   })
 
   document.getElementById('btn-settings')?.addEventListener('click', () => {

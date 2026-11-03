@@ -1,10 +1,11 @@
 import { getTheme, THEMES, setTheme } from './config.js'
 import { createState } from './state.js'
 import { bindControls } from './controls.js'
-import { startLoop, resetGame } from './game.js'
+import { startLoop, resetGame, stopLoop } from './game.js'
 import { updateValues } from './ui.js'
 import { render } from './render.js'
 import { bindScreens, showScreen } from './screens.js'
+import { startTutorial } from './tutorial.js'
 
 function Game() {
   bindScreens()
@@ -17,6 +18,7 @@ function Game() {
   const dom = {
     levelDisplay: document.getElementById('level-display'),
     scoreDisplay: document.getElementById('score-display'),
+    calc: document.querySelector('.calc'),
     gameOverDisplay: document.getElementById('game-over'),
     finalScoreDisplay: document.getElementById('final-score'),
     restartButton: document.getElementById('restart-btn'),
@@ -71,6 +73,18 @@ function Game() {
     resetGame(state, dom, ctx)
     updateValues(state, dom)
     startLoop(ctx, state, dom)
+  })
+
+  window.addEventListener('game:tutorial', () => {
+    if (!state) setupCanvas()
+
+    resetGame(state, dom, ctx)
+    stopLoop(state)
+    startTutorial(ctx, state, dom, () => {
+      resetGame(state, dom, ctx)
+      updateValues(state, dom)
+      startLoop(ctx, state, dom)
+    })
   })
 
   function applyThemeToCanvas() {

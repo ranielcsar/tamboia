@@ -22,7 +22,7 @@
   --text: snow;
   --ui-text: #161619;
   --stroke: #161619;
-  --fruit: #c33;
+  --fruit: #cc3333;
   --shadow-color: #24220140;
   --shadow: 0 4px 0 var(--shadow-color);
   --shadow-active: 0 2px 0 var(--shadow-color);
@@ -385,4 +385,20 @@ button .screen-header {
   font-size: 1.7ch;
   color: var(--ui-text);
   overflow: auto;
+}
+
+.tutorial-highlight {
+  outline-offset: 4px;
+  border-radius: 6px;
+  animation: tutorialPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes tutorialPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(204, 51, 51, 1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(204, 51, 51, 0.4);
+  }
 }

@@ -8,14 +8,14 @@ export const THEMES = {
     stroke: 'snow',
     background: 'khaki',
   },
-  pastel: {
-    head: '#87e1b5',
-    body: '#b5ebd0',
-    fruit: '#ff9aa2',
+  alternativeYellow: {
+    head: '#a7aefb',
+    body: '#fbf4a7',
+    fruit: '#a7fbca',
     text: '#2d3748',
-    uiText: '#4a5568',
-    stroke: '#ffffff',
-    background: '#fbf7ee',
+    uiText: '#ffffff',
+    stroke: '#264653',
+    background: '#caa7fb',
   },
   contrast: {
     head: '#00ff00',

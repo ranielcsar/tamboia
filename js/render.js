@@ -31,6 +31,7 @@ export function drawFruit(ctx, state, fruit, theme) {
 }
 
 export function render(ctx, state) {
+  if (state.tutorialActive) return
   const theme = getTheme()
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   drawSnake(ctx, state, theme)

@@ -24,6 +24,7 @@ export function createState(cols, rows) {
     rafId: null,
     lastTime: 0,
     accumulator: 0,
+    tutorialActive: false,
 
     // HUD
     displayedScore: -1,
