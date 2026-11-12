@@ -9,7 +9,7 @@ import {
 import { render } from './render.js'
 import { updateValues, showGameOver } from './ui.js'
 
-export function gameLoop(ctx, state, dom) {
+export function gameLoop(_, state, dom) {
   if (state.snake.length < 3) {
     gameOver(state, dom)
     return

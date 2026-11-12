@@ -22,8 +22,8 @@ function Game() {
     gameOverDisplay: document.getElementById('game-over'),
     finalScoreDisplay: document.getElementById('final-score'),
     restartButton: document.getElementById('restart-btn'),
-    leftNumber: document.querySelector('.left-number span'),
-    rightNumber: document.querySelector('.right-number span'),
+    leftNumber: document.querySelector('.left-number'),
+    rightNumber: document.querySelector('.right-number'),
     controlButtons: document.querySelectorAll('.ctrl-btn[data-direction]'),
   }
 
