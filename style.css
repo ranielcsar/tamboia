@@ -393,6 +393,10 @@ button .screen-header {
   animation: tutorialPulse 1.2s ease-in-out infinite;
 }
 
+.hidden {
+  display: none !important;
+}
+
 @keyframes tutorialPulse {
   0%,
   100% {

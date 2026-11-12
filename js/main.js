@@ -75,15 +75,19 @@ function Game() {
     startLoop(ctx, state, dom)
   })
 
-  window.addEventListener('game:tutorial', () => {
+  window.addEventListener('game:tutorial', (e) => {
     if (!state) setupCanvas()
 
     resetGame(state, dom, ctx)
     stopLoop(state)
     startTutorial(ctx, state, dom, () => {
-      resetGame(state, dom, ctx)
-      updateValues(state, dom)
-      startLoop(ctx, state, dom)
+      if (e.detail?.fromMenu) {
+        showScreen('menu')
+      } else {
+        resetGame(state, dom, ctx)
+        updateValues(state, dom)
+        startLoop(ctx, state, dom)
+      }
     })
   })
 

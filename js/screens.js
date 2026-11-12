@@ -16,8 +16,18 @@ function markTutorialSeen() {
   } catch {}
 }
 
+function updateTutorialButtonVisibility() {
+  const btnTutorial = document.getElementById('btn-tutorial')
+  if (btnTutorial) {
+    btnTutorial.classList.toggle('hidden', !hasSeenTutorial())
+  }
+}
+
 export function showScreen(name) {
   if (!SCREENS.includes(name)) return
+  if (name === 'menu') {
+    updateTutorialButtonVisibility()
+  }
   for (const s of SCREENS) {
     const el = document.getElementById(`screen-${s}`)
     if (!el) continue
@@ -26,6 +36,8 @@ export function showScreen(name) {
 }
 
 export function bindScreens() {
+  updateTutorialButtonVisibility()
+
   document.getElementById('btn-start')?.addEventListener('click', () => {
     showScreen('game')
     if (!hasSeenTutorial()) {
@@ -45,7 +57,10 @@ export function bindScreens() {
   })
 
   document.getElementById('btn-tutorial')?.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('game:tutorial'))
+    showScreen('game')
+    window.dispatchEvent(
+      new CustomEvent('game:tutorial', { detail: { fromMenu: true } })
+    )
   })
 
   document.querySelectorAll('[data-back]').forEach((btn) => {
