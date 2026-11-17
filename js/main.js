@@ -11,9 +11,9 @@ function Game() {
   bindScreens()
   showScreen('menu')
 
-  const main = document.querySelector('#screen-game main')
-  const canvas = main.querySelector('#screen')
-  const ctx = canvas.getContext('2d')
+  const main = document.querySelector('#screen-game main'),
+    canvas = main.querySelector('#screen'),
+    ctx = canvas.getContext('2d')
 
   const dom = {
     levelDisplay: document.getElementById('level-display'),
@@ -39,12 +39,12 @@ function Game() {
   }
 
   function setupCanvas() {
-    const width = main.clientWidth
-    const height = main.clientHeight
+    const width = main.clientWidth,
+      height = main.clientHeight
 
-    const PIXEL = getPixelValue(width, height)
-    const COLS = Math.max(1, Math.floor(width / PIXEL))
-    const ROWS = Math.max(1, Math.floor(height / PIXEL))
+    const PIXEL = getPixelValue(width, height),
+      COLS = Math.max(1, Math.floor(width / PIXEL)),
+      ROWS = Math.max(1, Math.floor(height / PIXEL))
 
     canvas.width = COLS * PIXEL
     canvas.height = ROWS * PIXEL
@@ -110,8 +110,8 @@ function Game() {
     if (state) render(ctx, state)
   }
 
-  const themeBtn = document.getElementById('theme-btn')
-  const themeNames = Object.keys(THEMES)
+  const themeBtn = document.getElementById('theme-btn'),
+    themeNames = Object.keys(THEMES)
   let themeIndex = 0
   themeBtn?.addEventListener('click', () => {
     themeIndex = (themeIndex + 1) % themeNames.length

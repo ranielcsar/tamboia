@@ -68,3 +68,26 @@ export function getTheme() {
 export function setTheme(name) {
   if (THEMES[name]) CONFIG.theme = name
 }
+
+export function getLayoutAxis() {
+  const portrait =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(orientation: portrait)').matches
+  return portrait ? 'y' : 'x'
+}
+
+export function isPortraitLayout() {
+  return getLayoutAxis() === 'y'
+}
+
+export function onOrientationChange(callback) {
+  if (typeof window === 'undefined' || !window.matchMedia) return function () {}
+  const mql = window.matchMedia('(orientation: portrait)')
+  function handler() {
+    callback(mql.matches ? 'y' : 'x')
+  }
+  mql.addEventListener?.('change', handler)
+  return function () {
+    mql.removeEventListener?.('change', handler)
+  }
+}

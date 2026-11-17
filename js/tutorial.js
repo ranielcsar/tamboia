@@ -1,4 +1,4 @@
-import { getTheme } from './config.js'
+import { getTheme, getLayoutAxis } from './config.js'
 import { stopLoop } from './game.js'
 
 const LAYOUT = {
@@ -21,17 +21,78 @@ const SCENARIO = {
   growDuration: 400,
   shrinkDuration: 400,
   markDuration: 1200,
-  initialSnakeHead: { x: 6, y: 5 },
-  initialSnakeBody: [
-    { x: 5, y: 5 },
-    { x: 4, y: 5 },
-  ],
-  endSnake: [
-    { x: 14, y: 5 },
-    { x: 13, y: 5 },
-    { x: 12, y: 5 },
-  ],
-  answerFruitOffset: { x: 3, y: 0 },
+  fruitStepDistance: 4,
+  endDistance: 8,
+  answerFruitDistance: 3,
+}
+
+function axisVector(axis, amount) {
+  if (axis === 'y') return { x: 0, y: amount }
+  return { x: amount, y: 0 }
+}
+
+function addAlongAxis(cell, axis, amount) {
+  const v = axisVector(axis, amount)
+  return { x: cell.x + v.x, y: cell.y + v.y }
+}
+
+function clampCell(cell, state) {
+  return {
+    x: Math.max(0, Math.min(state.cols - 1, cell.x)),
+    y: Math.max(0, Math.min(state.rows - 1, cell.y)),
+  }
+}
+
+function getInitialHead(state) {
+  const axis = shared.axis
+  const head = { x: 3, y: 3 }
+  if (axis === 'y') {
+    head.x = Math.floor(state.cols / 2)
+    head.y = Math.min(state.rows - 1, SCENARIO.endDistance + 2)
+  } else {
+    head.y = Math.floor(state.rows / 2)
+    head.x = Math.min(state.cols - 1, SCENARIO.endDistance + 2)
+  }
+  return clampCell(head, state)
+}
+
+function buildInitialSnake(state) {
+  const axis = shared.axis
+  const head = getInitialHead(state)
+  return [
+    head,
+    clampCell(addAlongAxis(head, axis, -1), state),
+    clampCell(addAlongAxis(head, axis, -2), state),
+  ]
+}
+
+function buildEndSnake(state) {
+  const axis = shared.axis
+  const head = getInitialHead(state)
+  return [
+    addAlongAxis(head, axis, SCENARIO.endDistance),
+    addAlongAxis(head, axis, SCENARIO.endDistance - 1),
+    addAlongAxis(head, axis, SCENARIO.endDistance - 2),
+  ].map(function (cell) {
+    return clampCell(cell, state)
+  })
+}
+
+function buildFruitPositions(state) {
+  const axis = shared.axis
+  const head = getInitialHead(state)
+  return [
+    clampCell(addAlongAxis(head, axis, SCENARIO.fruitStepDistance), state),
+    clampCell(addAlongAxis(head, axis, SCENARIO.endDistance), state),
+  ]
+}
+
+function buildAnswerFruitOffset(head, state) {
+  const axis = shared.axis
+  return clampCell(
+    addAlongAxis(head, axis, SCENARIO.answerFruitDistance),
+    state
+  )
 }
 
 const HIGHLIGHT_CLASS = 'tutorial-highlight'
@@ -40,7 +101,7 @@ const TEXT_KEYS = ['leftNumber', 'rightNumber', 'scoreDisplay']
 
 const FONT_FAMILY = 'Fredoka, sans-serif'
 
-const shared = { snake: null }
+const shared = { snake: null, axis: 'x' }
 
 let reqAnimFrameId = null
 let activeStep = null
@@ -230,9 +291,12 @@ function buildHoles(snake, fruits, pixel, extraHole = null) {
 
 function stepSnakeToward(snake, target) {
   const head = snake[0]
-  const next = {
-    x: head.x + Math.sign(target.x - head.x),
-    y: head.y,
+  const axis = shared.axis
+  const next = { x: head.x, y: head.y }
+  if (axis === 'y') {
+    next.y = head.y + Math.sign(target.y - head.y)
+  } else {
+    next.x = head.x + Math.sign(target.x - head.x)
   }
   snake.unshift(next)
   snake.pop()
@@ -256,17 +320,17 @@ function createAnswerStep({
 
   return {
     id,
-    snake: cloneSnake(SCENARIO.endSnake),
-    setup(dom) {
-      const base = cloneSnake(shared.snake ?? SCENARIO.endSnake)
+    snake: null,
+    setup(dom, state) {
+      const base = cloneSnake(shared.snake ?? buildEndSnake(state))
       const head = base[0]
 
       this.t = 0
       this.phase = 'show-fruits'
       this.snake = grow ? base : [...base, getExtendedTail(base)]
       this.fruit = {
-        x: head.x + SCENARIO.answerFruitOffset.x,
-        y: head.y + SCENARIO.answerFruitOffset.y,
+        x: buildAnswerFruitOffset(head, state).x,
+        y: buildAnswerFruitOffset(head, state).y,
         value: fruitValue,
       }
       this.cell = null
@@ -356,7 +420,9 @@ function createAnswerStep({
       const cellAlpha = this.getCellAlpha()
       if (this.cell) drawCell(ctx, this.cell, pixel, theme, cellAlpha)
 
-      visibleFruits.forEach((f) => drawFruit(ctx, f, pixel, theme))
+      visibleFruits.forEach(function (f) {
+        drawFruit(ctx, f, pixel, theme)
+      })
 
       if (this.phase === 'show-fruits') {
         const cx = this.fruit.x * pixel + pixel / 2
@@ -405,13 +471,14 @@ function createAnswerStep({
       drawTexts(ctx, w, h, pixel, texts, theme)
     },
     bindNext(canvas, finish) {
-      const onClick = () => {
-        if (this.phase === 'show-fruits') {
-          this.phase = 'moving'
-          this.moveT = 0
-        } else if (this.phase === 'show-done') {
+      const self = this
+      function onClick() {
+        if (self.phase === 'show-fruits') {
+          self.phase = 'moving'
+          self.moveT = 0
+        } else if (self.phase === 'show-done') {
           removeListener()
-          clearHighlights(this.dom)
+          clearHighlights(self.dom)
           finish()
         }
       }
@@ -424,9 +491,10 @@ function createAnswerStep({
 export const tutorialSteps = [
   {
     id: 'snake-head',
-    snake: [{ ...SCENARIO.initialSnakeHead }, ...SCENARIO.initialSnakeBody],
-    setup() {
+    snake: null,
+    setup(dom, state) {
       this.t = 0
+      this.snake = buildInitialSnake(state)
     },
     update(dt) {
       this.t += dt
@@ -462,26 +530,26 @@ export const tutorialSteps = [
       )
     },
     bindNext(canvas, finish) {
-      const remove = addCanvasListener(canvas, () => {
+      function onClick() {
         remove()
         finish()
-      })
+      }
+      const remove = addCanvasListener(canvas, onClick)
       this._removeListener = remove
     },
   },
   {
     id: 'eat-fruits',
-    snake: [{ ...SCENARIO.initialSnakeHead }, ...SCENARIO.initialSnakeBody],
-    fruits: [
-      { x: 10, y: 5, value: 3 },
-      { x: 14, y: 5, value: 4 },
-    ],
-    setup(dom) {
+    snake: null,
+    fruits: null,
+    setup(dom, state) {
+      const positions = buildFruitPositions(state)
       this.t = 0
       this.phase = 'show-first'
-      this.snake = [
-        { ...SCENARIO.initialSnakeHead },
-        ...SCENARIO.initialSnakeBody,
+      this.snake = buildInitialSnake(state)
+      this.fruits = [
+        { x: positions[0].x, y: positions[0].y, value: 3 },
+        { x: positions[1].x, y: positions[1].y, value: 4 },
       ]
       this.moveT = 0
       this.moveDuration = SCENARIO.moveDuration
@@ -542,16 +610,19 @@ export const tutorialSteps = [
 
       drawOverlay(ctx, w, h)
 
-      const visibleFruits = this.fruits.filter(
-        (f, i) =>
+      const visibleFruits = this.fruits.filter(function (f, i) {
+        return (
           !this.eaten.includes(f) &&
           (i === 0 ||
             (this.phase !== 'show-first' && this.phase !== 'moving-to-first'))
-      )
+        )
+      }, this)
 
       carveHoles(ctx, pixel, buildHoles(this.snake, visibleFruits, pixel))
       drawSnake(ctx, this.snake, pixel, theme)
-      visibleFruits.forEach((f) => drawFruit(ctx, f, pixel, theme))
+      visibleFruits.forEach(function (f) {
+        drawFruit(ctx, f, pixel, theme)
+      })
 
       if (this.phase === 'show-first') {
         const f = this.fruits[0]
@@ -573,16 +644,17 @@ export const tutorialSteps = [
       drawTexts(ctx, w, h, pixel, [msg], theme)
     },
     bindNext(canvas, finish) {
-      const onClick = () => {
-        if (this.phase === 'show-first') {
-          this.phase = 'moving-to-first'
-          this.moveT = 0
-        } else if (this.phase === 'show-second') {
-          this.phase = 'moving-to-second'
-          this.moveT = 0
-        } else if (this.phase === 'done') {
+      const self = this
+      function onClick() {
+        if (self.phase === 'show-first') {
+          self.phase = 'moving-to-first'
+          self.moveT = 0
+        } else if (self.phase === 'show-second') {
+          self.phase = 'moving-to-second'
+          self.moveT = 0
+        } else if (self.phase === 'done') {
           remove()
-          clearHighlights(this.dom)
+          clearHighlights(self.dom)
           finish()
         }
       }
@@ -631,6 +703,7 @@ function cleanupTutorial(state) {
   }
 
   shared.snake = null
+  shared.axis = 'x'
   activeCtx = null
   activeDom = null
   domSnapshot = null
@@ -647,6 +720,7 @@ export function startTutorial(ctx, state, dom, onFinish) {
   activeDom = dom
   domSnapshot = snapshotDom(dom)
   shared.snake = null
+  shared.axis = getLayoutAxis()
 
   let stepIndex = 0
 
@@ -657,7 +731,7 @@ export function startTutorial(ctx, state, dom, onFinish) {
       return
     }
     activeStep = step
-    step.setup?.(dom)
+    step.setup?.(dom, state)
 
     let last = 0
     let started = false
