@@ -289,8 +289,7 @@ button.ctrl-btn:active {
 }
 
 .menu-header {
-  margin-top: 20vh;
-  text-align: center;
+  margin: 20vh auto 0;
 }
 
 .menu-header h1 {
@@ -321,6 +320,13 @@ button.ctrl-btn:active {
   position: relative;
 }
 
+@media screen and (max-width: 768px) {
+  .menu-btn {
+    width: 65%;
+    margin: auto;
+  }
+}
+
 .menu-btn:hover::after {
   content: '🐍';
   position: absolute;
@@ -344,10 +350,30 @@ button {
 .screen-header {
   display: flex;
   width: 100%;
-  padding-top: 2rem;
-  max-width: 38rem;
+  padding: 2rem 1rem;
   gap: 2rem;
   align-items: center;
+}
+
+.screen-content {
+  width: 95%;
+  max-width: 40rem;
+  padding: 1rem;
+  line-height: 1.5;
+  font-size: 1.7ch;
+  color: var(--ui-text);
+  overflow: auto;
+}
+
+@media screen and (min-width: 768px) {
+  .screen-header {
+    max-width: 38rem;
+    padding: 2rem 0 0;
+  }
+
+  .screen-content {
+    margin-top: 2rem;
+  }
 }
 
 button .screen-header {
@@ -374,17 +400,6 @@ button .screen-header {
   border-radius: 200px;
   background: #fffafa96;
   box-shadow: var(--shadow);
-}
-
-.screen-content {
-  width: 95%;
-  max-width: 40rem;
-  padding: 1rem;
-  margin-top: 2rem;
-  line-height: 1.5;
-  font-size: 1.7ch;
-  color: var(--ui-text);
-  overflow: auto;
 }
 
 .tutorial-highlight {
